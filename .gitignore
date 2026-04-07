@@ -1,0 +1,4 @@
+node_modules/
+dist/
+*.dia~
+.DS_Store
