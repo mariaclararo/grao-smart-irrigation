@@ -7,6 +7,8 @@ abstract class Usuario{
     set email(email: string){this._email = email;}
 
     get notificacoes(): Notificacao[]{return this._notificacoes;}
+    set notificacoes(listaNotificacao: Notificacao[]){this._notificacoes = listaNotificacao}
+
     public adicionarNotificacao(notificacao: Notificacao): void {this._notificacoes.push(notificacao);}
 
     public login(): void{
@@ -22,20 +24,16 @@ abstract class Usuario{
 
 //usuários podem ser: produtores ou funcionários (herança)
 class Produtor extends Usuario{
-
-    private _funcionarios: Funcionario[]; 
-    private _plantacoes: Plantacao[];
-    plano: Plano; 
-
-    constructor(public id: number, public nome: string, protected _email: string, protected senha: string, public cnpj: string, plano: Plano) {
+    constructor(public id: number, public nome: string, protected _email: string, protected senha: string, public cnpj: string, 
+                public plano: Plano, private _plantacoes:Plantacao[] = [], private _funcionarios: Funcionario[] = [] ) {
         super(id, nome, _email, senha);
-        this._funcionarios = []; //pode usar o sistema sem nenhum funcionário associado
-        this._plantacoes = []; //pode fazer um cadastro sem nenhuma plantação inicial
-        this.plano = plano;
     }
 
     get funcionarios(): Funcionario[]{return this._funcionarios;}
     get plantacoes(): Plantacao[]{return this._plantacoes;}
+
+    set funcionarios(listaFuncs: Funcionario[]){this._funcionarios = listaFuncs;}
+    set plantacoes(listaPlant: Plantacao[]){this._plantacoes = listaPlant;}
 
     public gerarRelatorioEconomia(Et0: number, kr:number): number {
         let litrosEconomizados = 0;
@@ -64,7 +62,7 @@ class Produtor extends Usuario{
         return litrosEconomizados;
         
     };
-    public cadastrarFuncionario(funcionario: Funcionario): void{this._funcionarios.push(funcionario);}
+    public cadastrarNovoFuncionario(funcionario: Funcionario): void{this._funcionarios.push(funcionario);}
     public associarNovaPlantacao(plantacao: Plantacao): void{this._plantacoes.push(plantacao);}
     public exibirMenuPrincipal(): string[] {
         return ['Gestão Hídrica', 'Monitorar Safra', 'Dados Plano']
@@ -72,7 +70,7 @@ class Produtor extends Usuario{
 }
 
 class Funcionario extends Usuario{
-    constructor(public id: number, public nome: string, protected _email: string, protected senha: string, public especialidade: string) {
+    constructor(public id: number, public nome: string, protected _email: string, protected senha: string, public especialidade: string, public empregador: Produtor) {
         super(id, nome, _email, senha);
     }
     public registrarManutencao(idDisp: number, tipo: string, obs: string): void {
@@ -88,13 +86,20 @@ class Funcionario extends Usuario{
 
 //produtor - plano associação (produtor assina um plano)
 class Plano{
-    constructor(public nome: string, public limiteHectares: number, public precoMensal: number, private _situacao: string, private _ativo: boolean){};
+    private _ativo: boolean;
+    constructor(public nome: string, public limiteHectares: number, public precoMensal: number, private _situacao: string, public produtorAssinante: Produtor){
+        this._ativo = true; //assume que começa o plano pago e ativo
+    };
+    
     get situacao(): string{return this._situacao;}
     get ativo(): boolean{return this._ativo;}
+
     set situacao(novaSituacao: string){
         this._situacao = novaSituacao;
         this.atualizarStatus();
     }
+    //ativo sem set pois o valor só muda c situacao
+
     public validarTamanho(areaPlantacao: number): boolean {
         return areaPlantacao <= this.limiteHectares;
     }
@@ -112,12 +117,12 @@ interface ResumoSaude{ umidadeMedia: number, alertaDispositivos: Dispositivo[];}
 //mais podem ser add depois
 class Plantacao{
     public setores: Setor[] = [];
-    constructor(public id: number, public nomeFazenda: string, public localizacao: string, public totalHectares: number,
-        idSetor: number, nomeSetor: string, areaHectares: number, espacamentoTubos: number, cultura: Cultura){
+    constructor(public id: number, public nomeFazenda: string, public localizacao: string, public totalHectares: number, public proprietario: Produtor,
+                        idSetor: number, nomeSetor: string, areaHectares: number, espacamentoTubos: number, cultura: Cultura, ){
             this.adicionarSetor(idSetor, nomeSetor, areaHectares, espacamentoTubos, cultura);
         }
     public adicionarSetor(idSet: number, nomeSet: string, area: number, espacamento: number, cult: Cultura): void{
-        const newSetor = new Setor(idSet, nomeSet, area, espacamento, cult, this);
+        const newSetor = new Setor(idSet, nomeSet, area, espacamento, this, cult);
         this.setores.push(newSetor);
     }
     public getResumoSaude(): ResumoSaude{
@@ -145,16 +150,12 @@ class Plantacao{
 
 //setor - cultura (agregação)
 class Setor{
-    cultura: Cultura;
-    plantacao: Plantacao;
-    private _dispositivos: Dispositivo[];
-    constructor(public id: number, public nome: string, public areaHectares: number, public espacamentoTubos: number, cultura: Cultura, plantacao: Plantacao){
-        this.cultura = cultura;
-        this.plantacao = plantacao;
-        this._dispositivos = []; //setor pode iniciar sem nada
-    }
+    ;
+    constructor(public id: number, public nome: string, public areaHectares: number, public espacamentoTubos: number, public plantacao: Plantacao, 
+                public cultura: Cultura, private _dispositivos: Dispositivo[] = []){}
 
     get dispositivos(): Dispositivo[]{return this._dispositivos;}
+    set dispositivos(listaDisp: Dispositivo[]){this._dispositivos = listaDisp;}
 
     public associarDispositivo(disp: Dispositivo): void{this._dispositivos.push(disp);}
     public getUmidadeMedia(): number{
@@ -202,7 +203,7 @@ class Setor{
 
 class Cultura{
     private kcOriginal: number; //guarda valor original para os cálculos
-    constructor(public nome: string, public variedade: string, public indiceKc: number){
+    constructor(public nome: string, public variedade: string, public indiceKc: number, public setorPlantado: Setor){
         this.kcOriginal = indiceKc;
     };
     public ajustarKc(tempoPlantioMeses: number): void {
@@ -219,18 +220,28 @@ class Cultura{
 //dispositivo - setor (agregacao)
 //dispositivo - sensor (agregação)~
 class Dispositivo{
-    private _sensores: Sensor[];
-    constructor(public id: number, private _macAddress: string, private _nivelBateria: number){
-        this._sensores = []; //pode ser apenas colocado sem nenhum sensor associado (só n vai funcionar para análise)
+    constructor(public id: number, private _macAddress: string, private _nivelBateria: number, public setorDeOperacao: Setor, private _sensores: Sensor[] = []){
+        //p validar
+        this.macAddress = _macAddress;
+        this.nivelBateria = _nivelBateria;
     }
+
     get macAddress(): string{return this._macAddress;}
     get nivelBateria(): number{return this._nivelBateria;}
     get sensores(): Sensor[] {return this._sensores;}
 
-    //para garantir que atualizacao da bateria seja um nível válido
-    public atualizarBateria(nivel: number): void{
-        if(nivel >= 0 && nivel <= 100){this._nivelBateria = nivel;}
+    set macAddress(ma: string){
+        //padroniza em formato corrido de hexa sem os ':' para armazenar no bd dps
+        const padrao = ma.replace(/[:.-]/g, "").trim();
+        //ve se tem exatamente 12 letras e se são validas para mac
+        const isValid = /^[0-9a-fA-F]{12}$/.test(padrao);
+        if(isValid) this._macAddress = padrao;
     }
+    set nivelBateria(nivel: number){
+        if(nivel >= 0 && nivel <= 100) this._nivelBateria = nivel;
+    }
+    set sensores(listaSensores: Sensor[]){this._sensores = listaSensores;}
+
     public verificarNivelBateria(): boolean{
         if(this._nivelBateria <= 20){return false;} //indica baixo nível de bateria (valor que eu mesma decidi)
         else return true;
@@ -252,10 +263,9 @@ class Dispositivo{
 class Sensor{
     private _valorUltimaLeitura: number;
     private _leituras: Leitura[];
-    constructor(public id: number, public tipo: string, public unidadeMedida: string){
+    constructor(public id: number, public tipo: string, public unidadeMedida: string, public dispAssociado: Dispositivo){
         this._valorUltimaLeitura = 0;
         this._leituras = [];
-
     }; //tipo: 'Umidade' do solo ou 'Fluxo' de água
 
     get valorUltimaLeitura(): number {return this._valorUltimaLeitura;}
@@ -277,11 +287,14 @@ class Sensor{
 }
 
 class Leitura{
-    constructor(public id: number, public valor: number, public timeStamp: Date){};
+    constructor(public id: number, public valor: number, public timeStamp: Date, public sensorRaiz: Sensor){};
 }
 
 class Notificacao{
-    constructor(public id: number, private _mensagem: string, public lida: boolean, public timeStamp: Date){};
+    usuario:Usuario;
+    constructor(public id: number, private _mensagem: string, public lida: boolean, public timeStamp: Date, usuario: Usuario){
+        this.usuario = usuario;
+    };
 
     get mensagem(): string {return this._mensagem;}
     set mensagem(msg: string) {if((msg.length) > 0){this._mensagem = msg;}}
