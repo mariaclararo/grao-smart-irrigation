@@ -110,17 +110,26 @@ class Plano{
 }
 
 //para criar objeto de retorno no método da plantação
-interface ResumoSaude{ umidadeMedia: number, alertaDispositivos: Dispositivo[];}
+//troquei para Classe para conseguir mapear melhor o bidirecional com dispositivos e plantação pro prisma (n tava conseguindo fazer sentido c interface)
+class ResumoSaude {
+    constructor(public id:number | undefined, public umidadeMedia: number, public plantacaoExibida: Plantacao, public alertaDispositivos: Dispositivo[] = []){};
+}
 
 //produtor -plantação agregação (produtor possui plantações)
 //plantacao setor composição (no mínimo 1 setor -> plantação inteira)
 //mais podem ser add depois
 class Plantacao{
     public setores: Setor[] = [];
+    private _logResumos: ResumoSaude[] =[];
+
     constructor(public id: number, public nomeFazenda: string, public localizacao: string, public totalHectares: number, public proprietario: Produtor,
                         idSetor: number, nomeSetor: string, areaHectares: number, espacamentoTubos: number, cultura: Cultura, ){
             this.adicionarSetor(idSetor, nomeSetor, areaHectares, espacamentoTubos, cultura);
         }
+    
+    get logResumos(): ResumoSaude[]{return this._logResumos;}
+    set logResumos(novoLog: ResumoSaude[]) {this._logResumos = novoLog;}
+
     public adicionarSetor(idSet: number, nomeSet: string, area: number, espacamento: number, cult: Cultura): void{
         const newSetor = new Setor(idSet, nomeSet, area, espacamento, this, cult);
         this.setores.push(newSetor);
@@ -139,11 +148,16 @@ class Plantacao{
                 if(!disp.verificarNivelBateria()) alertaDispositivos.push(disp);
             });
         }); 
-        //retorna objeto
-        const resumo: ResumoSaude = {
-            umidadeMedia: numSetores > 0 ? (umidade / numSetores) : -1,
-            alertaDispositivos
-        };
+
+        //gera um ID aleatório
+        const randId = crypto.getRandomValues(new Uint32Array(1))[0];
+        const umidadeMedia = numSetores > 0 ? (umidade / numSetores) : -1;
+        const resumo = new ResumoSaude(randId, umidadeMedia, this, alertaDispositivos);
+
+        //já linka com a lista de resumos em que o dispositivo em questão está associado e c os da plantação para garantir bidirecionalidade
+        alertaDispositivos.forEach(d =>{d.indicadoResumos.push(resumo);});
+        this._logResumos.push(resumo);
+
         return resumo;
     };
 }
@@ -220,6 +234,7 @@ class Cultura{
 //dispositivo - setor (agregacao)
 //dispositivo - sensor (agregação)~
 class Dispositivo{
+    private _indicadoResumos: ResumoSaude[] = [];
     constructor(public id: number, private _macAddress: string, private _nivelBateria: number, public setorDeOperacao: Setor, private _sensores: Sensor[] = []){
         //p validar
         this.macAddress = _macAddress;
@@ -229,6 +244,7 @@ class Dispositivo{
     get macAddress(): string{return this._macAddress;}
     get nivelBateria(): number{return this._nivelBateria;}
     get sensores(): Sensor[] {return this._sensores;}
+    get indicadoResumos(): ResumoSaude[]{return this._indicadoResumos;}
 
     set macAddress(ma: string){
         //padroniza em formato corrido de hexa sem os ':' para armazenar no bd dps
@@ -241,6 +257,7 @@ class Dispositivo{
         if(nivel >= 0 && nivel <= 100) this._nivelBateria = nivel;
     }
     set sensores(listaSensores: Sensor[]){this._sensores = listaSensores;}
+    set indicadoResumos(resumos: ResumoSaude[]){this._indicadoResumos = resumos;}
 
     public verificarNivelBateria(): boolean{
         if(this._nivelBateria <= 20){return false;} //indica baixo nível de bateria (valor que eu mesma decidi)
