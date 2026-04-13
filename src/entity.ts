@@ -217,7 +217,7 @@ class Setor{
 
 class Cultura{
     private kcOriginal: number; //guarda valor original para os cálculos
-    constructor(public nome: string, public variedade: string, public indiceKc: number, public setorPlantado: Setor){
+    constructor(public id: number, public nome: string, public variedade: string, public indiceKc: number, public setorPlantado: Setor){
         this.kcOriginal = indiceKc;
     };
     public ajustarKc(tempoPlantioMeses: number): void {
@@ -319,4 +319,4 @@ class Notificacao{
     public marcarComoLida(): void {this.lida = true;}
 }
 
-//console.log("Compilou")
+console.log("Compilou")

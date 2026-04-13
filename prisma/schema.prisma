@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TipoUsuario {
+  PRODUTOR
+  FUNCIONARIO
+}
+
+model Usuario {
+  id           Int           @id @default(autoincrement()) //chave primária
+  nome         String
+  email        String        @unique //nao pode repetir email
+  senha        String
+  tipo         TipoUsuario
+  notificacoes Notificacao[] //chave da relação no lado 1 da notificação
+  //múltiplas tabelas (genérica)
+  produtor     Produtor?     @relation("Produtor")
+  funcionario  Funcionario?  @relation("Funcionario")
+}
+
+model Produtor {
+  id           Int           @id //recebe o id que foi gerado com autoincrement no usuario
+  usuario      Usuario       @relation("Produtor", fields: [id], references: [id])
+  cnpj         String        @unique //tbm não pode repetir
+
+  planoId Int @unique
+  plano  Plano @relation(fields: [planoId], references: [id])
+  //relações 1:N
+  plantacoes   Plantacao[]
+  funcionarios Funcionario[]
+}
+
+model Funcionario {
+  id            Int     @id
+  usuario       Usuario @relation("Funcionario", fields: [id], references: [id])
+  especialidade String
+
+  //1:N com produtor, chave estrangeira fica aqui
+  empregadorId Int
+  empregador   Produtor @relation(fields: [empregadorId], references: [id])
+}
+
+model Notificacao {
+  id        Int      @id @default(autoincrement())
+  mensagem  String
+  lida      Boolean  @default(false) //notificacao criada não está lida a princípio
+  timeStamp DateTime @default(now()) //cria instância no momento em que notificação é feita
+  //relacionamento 1:N com usuário
+  usuarioId Int
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+}
+
+model Plano {
+  id             Int     @id @default(autoincrement())
+  nome           String
+  limiteHectares Float
+  precoMensal    Float
+  situacao       String
+  ativo          Boolean
+
+  produtorAssinante Produtor ?
+}
+
+model Plantacao {
+  id            Int           @id @default(autoincrement())
+  nomeFazenda   String
+  localizacao   String
+  totalHectares Float
+  //relação 1:N com produtor (lado da chave estrangeira)
+  proprietarioId    Int
+  proprietario  Produtor      @relation(fields: [proprietarioId], references: [id])
+  //relações 1:N c chave estrangeira do outro lado
+  setores       Setor[]
+  logResumos    ResumoSaude[]
+}
+
+model Setor {
+  id               Int    @id @default(autoincrement())
+  nome             String
+  areaHectares     Float
+  espacamentoTubos Float
+
+  //relação 1:N c plantação (lado chave estrangeira)
+  plantacaoId  Int
+  plantacao    Plantacao     @relation(fields: [plantacaoId], references: [id])
+  culturaId Int @unique
+  cultura Cultura @relation(fields: [culturaId], references: [id])
+  //relação 1:N com dispositivos
+  dispositivos Dispositivo[]
+}
+
+model ResumoSaude {
+  id                 Int           @id @default(autoincrement())
+  umidadeMedia       Float
+  //relação 1:N c plantação (lado da chave estrangeira)
+  plantacaoExibidaId        Int
+  plantacaoExibida          Plantacao     @relation(fields: [plantacaoExibidaId], references: [id])
+  //relação N:N implícita com dispositivo
+  alertaDispositivos Dispositivo[] @relation("DispositivoAlerta")
+}
+
+model Cultura {
+  id        Int    @id @default(autoincrement())
+  nome      String
+  variedade String
+  indiceKc  Float
+  //relacao 1:1 c setor
+  setorPlantado Setor?
+}
+
+model Dispositivo {
+  id            Int           @id @default(autoincrement())
+  macAddress    String        @unique //tbm não pode repetir
+  nivelBateria  Int
+  
+  setorDeOperacaoId       Int
+  setorDeOperacao         Setor         @relation(fields: [setorDeOperacaoId], references: [id])
+  sensores      Sensor[]
+  
+  // Relacionamento N:N implícito com ResumoSaude [cite: 358, 369, 376]
+  indicadoResumos       ResumoSaude[] @relation("DispositivoAlerta")
+}
+
+model Sensor {
+  id            Int           @id @default(autoincrement())
+  tipo          String
+  unidadeMedida String
+  
+  dispAssociadoId Int
+  dispAssociado   Dispositivo   @relation(fields: [dispAssociadoId], references: [id])
+  leituras      Leitura[] //1:N
+}
+
+model Leitura {
+  id        Int      @id @default(autoincrement())
+  valor     Float
+  timeStamp DateTime @default(now())
+  
+  sensorRaizId  Int
+  sensorRaiz    Sensor   @relation(fields: [sensorRaizId], references: [id])
+}

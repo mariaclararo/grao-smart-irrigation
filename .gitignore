@@ -3,3 +3,5 @@ dist/
 *.dia~
 .DS_Store
 *.txt
+/generated/prisma
+volumes
