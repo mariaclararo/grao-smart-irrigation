@@ -1,4 +1,0 @@
-Acabei mudando a minha interface resumo para classe pq tava achando muito difícil de mapear o relacionamento bidirecional
-	- Só que, eu não sei como que fica essa relação no diagrama
-	- Pq assim, eu só dou new em resumo dentro de plantação no método getResumoPlantacao(), do contrário, eu não preciso criar um resumo dele quando ele mesmo é criado.
-	- Isso é uma agregação mesmo?
