@@ -22,8 +22,7 @@ export class NotificacaoRepository {
                 //lida ja tem default no banco como false
             } });
     }
-    //passa o id para identificar, e deixa o data como partial (omitindo apenas o id para n deixar alterar o id)
-    //para que o usuário possa dar update apenas nas features que desejar
+
     public async update(id: number, 
         data: Partial<Omit<Notificacao, 'id' | 'dataEnvio' | 'usuarioId'> & { usuarioId: number }>): Promise<Notificacao> {
         return prisma.notificacao.update({ where: { id: id }, data }); //da update somente nos campos que não estão undefined

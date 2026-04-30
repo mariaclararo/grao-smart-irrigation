@@ -4,12 +4,11 @@ import type { ResumoSaude } from '../../generated/prisma/client.js';
 
 export class ResumoSaudeController {
     //use funções de seta para manter contexto do atributo
-    private resumoSaudeRepository = new ResumoSaudeRepository();
-
+    private resumoSaudeRepository = new ResumoSaudeRepository();  
     // POST /resumoSaudees -> para criar um resumoSaude, omitindo o campo de id pois é autoincrement no banco de dados
     post = async (
             request: FastifyRequest<{ 
-            Body: Omit<ResumoSaude, 'id'> }>,
+            Body: Omit<ResumoSaude, 'id'> & { dispositivosIds?: number[] } }>,
             reply: FastifyReply) => {
         const resumoSaude = request.body; //aqui a informação para criar o resumoSaude é passada no corpo do http
         const json = await this.resumoSaudeRepository.create(resumoSaude); //await para esperar o promise
@@ -43,7 +42,7 @@ export class ResumoSaudeController {
     putParamId = async (
             request: FastifyRequest<{
             Params: { id: string },
-            Body: Omit<ResumoSaude, 'id'>}>, //passa o que quer alterar do resumoSaude identificado, não podendo mexer no id autoincrementado pelo banco
+            Body: Omit<ResumoSaude, 'id'> & { dispositivosIds?: number[] }}>, //passa o que quer alterar do resumoSaude identificado, não podendo mexer no id autoincrementado pelo banco
             reply: FastifyReply) => {
         const { id } = request.params;
         const data = request.body; //nome e descrição são as features que podem ser passadas pelo corpo

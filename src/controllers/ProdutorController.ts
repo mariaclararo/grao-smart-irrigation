@@ -56,6 +56,7 @@ export class ProdutorController {
             );
             reply.status(200).send(json);
         } catch (error) {
+            console.log(error)
             reply.status(404).send({ message: 'Produtor not found' });
         }
     };

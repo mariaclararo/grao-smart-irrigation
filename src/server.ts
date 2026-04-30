@@ -1,4 +1,8 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUi from '@fastify/swagger-ui'
+
 import produtorRoutes from './routers/produtor.route.js';
 import funcionarioRoutes from './routers/funcionario.route.js';
 import planoRoutes from './routers/plano.route.js';
@@ -12,6 +16,28 @@ import leituraRoutes from './routers/leitura.route.js';
 import notificacaoRoutes from './routers/notificacao.route.js';
 
 const app = Fastify({ logger: true }); //instância Fastify
+
+//ajustes para usar o swagger
+await app.register(cors, {
+    origin: "*",
+    methods: "*",
+});
+
+await app.register(fastifySwagger, {
+    openapi: {
+        info: {
+            title: 'GRAO API',
+            description: 'API REST PROJECT - PBLC01',
+            version: '1.0.0',
+        },
+        servers: [{ url: 'http://localhost:3000' }],
+    },
+})
+
+await app.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
+})
+
 app.register(produtorRoutes, { prefix: '/produtores' });
 app.register(funcionarioRoutes, { prefix: '/funcionarios' })
 app.register(planoRoutes, { prefix: '/planos' })

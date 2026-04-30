@@ -12,20 +12,19 @@ export class LeituraRepository {
     public async findById(id: number): Promise<Leitura | null> {
         return prisma.leitura.findUnique({ where: { id: id } });
     }
-    //da omit no id do Leitura pois é autoincrement no banco
-    //data == dado que ele vai receber
-    public async create(data: Omit<Leitura, 'id' | 'dataHora' | 'sensorId'> & { sensorId: number }): Promise<Leitura> {
+
+    public async create(data: Omit<Leitura, 'id' | 'dataHora' | 'sensorId'> & { sensorRaizId: number }): Promise<Leitura> {
         return prisma.leitura.create({
             data: {
                 valor: data.valor,
-                sensorRaiz: { connect: { id: data.sensorId } }
+                sensorRaiz: { connect: { id: data.sensorRaizId } }
             }
         });
     }
     //passa o id para identificar, e deixa o data como partial (omitindo apenas o id para n deixar alterar o id)
     //para que o usuário possa dar update apenas nas features que desejar
     public async update(id: number,
-        data: Partial<Omit<Leitura, 'id' | 'dataHora' | 'sensorId'> & { sensorId: number }>): Promise<Leitura> {
+        data: Partial<Omit<Leitura, 'id' | 'dataHora' | 'sensorId'> & { sensorRaizId: number }>): Promise<Leitura> {
         return prisma.leitura.update({ where: { id: id }, data }); //da update somente nos campos que não estão undefined
     }
 

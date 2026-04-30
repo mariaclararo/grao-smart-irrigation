@@ -1,12 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 import { plantacaoController } from '../controllers/PlantacaoController.js';
+import { deletePlantacaoParamIdSchema, getPlantacaoParamIdSchema, getPlantacaoSchema, postPlantacaoSchema, putPlantacaoParamIdSchema } from '../schemas/plantacao.schema';
+
 //função seta com todas rotas para plantacao
 async function plantacaoRoutes(fastify: FastifyInstance) {
   // Rota GET /
-  fastify.get('/', plantacaoController.get);
-  fastify.get('/:id', plantacaoController.getParamId);
-  fastify.post('/', plantacaoController.post);
-  fastify.put('/:id', plantacaoController.putParamId);
-  fastify.delete('/:id', plantacaoController.deleteParamId);
+  fastify.get('/', getPlantacaoSchema, plantacaoController.get);
+  fastify.get('/:id', getPlantacaoParamIdSchema, plantacaoController.getParamId);
+  fastify.post('/', postPlantacaoSchema, plantacaoController.post);
+  fastify.put('/:id', putPlantacaoParamIdSchema, plantacaoController.putParamId);
+  fastify.delete('/:id', deletePlantacaoParamIdSchema, plantacaoController.deleteParamId);
 }
 export default plantacaoRoutes;

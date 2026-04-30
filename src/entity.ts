@@ -87,7 +87,7 @@ class Funcionario extends Usuario{
 //produtor - plano associação (produtor assina um plano)
 class Plano{
     private _ativo: boolean;
-    constructor(public nome: string, public limiteHectares: number, public precoMensal: number, private _situacao: string, public produtorAssinante: Produtor){
+    constructor(public id: number, public nome: string, public limiteHectares: number, public precoMensal: number, private _situacao: string, public produtorAssinante: Produtor){
         this._ativo = true; //assume que começa o plano pago e ativo
     };
     

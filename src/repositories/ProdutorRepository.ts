@@ -11,11 +11,11 @@ export type CreateProdutorDTO = Omit<Usuario, 'id' | 'tipo'> & Omit<Produtor, 'i
 export class ProdutorRepository {
     //read
     public async findAll(): Promise<Produtor[]> {
-        return prisma.produtor.findMany({include:{usuario: true, plano:true}}); //retornar os dados q são herdados de usuario tbm e o plano
+        return prisma.produtor.findMany({ include: { usuario: true, plano: true } }); //retornar os dados q são herdados de usuario tbm e o plano
     }
     //read
     public async findById(id: number): Promise<Produtor | null> {
-        return prisma.produtor.findUnique({ where: { id: id }, include:{usuario: true, plano:true}},);
+        return prisma.produtor.findUnique({ where: { id: id }, include: { usuario: true, plano: true } },);
     }
     //create
     public async create(data: CreateProdutorDTO): Promise<Produtor> {
@@ -43,33 +43,36 @@ export class ProdutorRepository {
             }
         });
     }
-    //update
+    //update (mudei para resolver problema com id do plano)
     public async update(id: number, data: Partial<CreateProdutorDTO>): Promise<Produtor> {
-        // Filter undefined values from all top-level fields
-        const produtorUpdate = omitUndefined({
-            cnpj: data.cnpj,
-            planoId: data.planoId
-        });
+        const updateData: any = {};
 
-        // Filter undefined values from usuario fields
+        if (data.cnpj !== undefined) {
+            updateData.cnpj = data.cnpj;
+        }
+
+        if (data.planoId !== undefined) {
+            updateData.plano = {
+                connect: { id: data.planoId }
+            };
+        }
+
         const usuarioUpdate = omitUndefined({
             nome: data.nome,
             email: data.email,
             senha: data.senha
         });
 
-        const updateData: any = {
-            ...produtorUpdate,
-            // Only include usuario if there are fields to update
-            ...(Object.keys(usuarioUpdate).length > 0 && {
-                usuario: { update: usuarioUpdate }
-            })
-        };
+        if (Object.keys(usuarioUpdate).length > 0) {
+            updateData.usuario = {
+                update: usuarioUpdate
+            };
+        }
 
         return prisma.produtor.update({
             where: { id },
             data: updateData,
-            include: { usuario: true }
+            include: { usuario: true, plano: true }
         });
     }
     //delete

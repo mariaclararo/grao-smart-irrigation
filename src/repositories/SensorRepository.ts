@@ -5,12 +5,27 @@ import type { Sensor } from '../../generated/prisma/client.js';
 
 export class SensorRepository {
     //promete que quando o banco retornar com o findMany, vai entregar uma lista de sensores (Sensor[])
-    public async findAll(): Promise<Sensor[]> {
-        return prisma.sensor.findMany();
+    public async findAll(): Promise<(Sensor & { valorUltimaLeitura: number })[]> {
+        const sensores = await prisma.sensor.findMany({ include: { leituras: true } });
+
+        return sensores.map(sensor => ({
+            ...sensor,
+            valorUltimaLeitura: sensor.leituras && sensor.leituras.length > 0
+                ? sensor.leituras[sensor.leituras.length - 1]?.valor ?? 0
+                : 0
+        }));
     }
 
-    public async findById(id: number): Promise<Sensor | null> {
-        return prisma.sensor.findUnique({ where: { id: id } });
+    public async findById(id: number): Promise<(Sensor & { valorUltimaLeitura: number }) | null> {
+        const sensor = await prisma.sensor.findUnique({ where: { id: id }, include: { leituras: true } });
+
+        if(!sensor) return null;
+        return {
+            ...sensor,
+            valorUltimaLeitura: sensor.leituras && sensor.leituras.length > 0 
+                ? sensor.leituras[sensor.leituras.length - 1]?.valor ?? 0 
+                : 0
+        };
     }
 
     public async create(data: Omit<Sensor, 'id' | 'dispAssociadoId'> & { dispAssociadoId: number }): Promise<Sensor> {
@@ -19,7 +34,8 @@ export class SensorRepository {
                 tipo: data.tipo,
                 unidadeMedida: data.unidadeMedida,
                 dispAssociado: { connect: { id: data.dispAssociadoId } }
-            }
+            },
+            include: { leituras: true }
         });
     }
 

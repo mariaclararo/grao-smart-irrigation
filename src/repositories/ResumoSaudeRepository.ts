@@ -13,9 +13,7 @@ export class ResumoSaudeRepository {
     public async findById(id: number): Promise<ResumoSaude | null> {
         return prisma.resumoSaude.findUnique({ where: { id: id }, include: { plantacaoExibida: true, alertaDispositivos: true } });
     }
-    //da omit no id do ResumoSaude pois é autoincrement no banco
-    //data == dado que ele vai receber
-    //posso ou nao criar com dispositivos vinculados (pois pode n ter nenhum em alerta)
+
     public async create(data: Omit<ResumoSaude, 'id'> & { dispositivosIds?: number[] }): Promise<ResumoSaude> {
         return prisma.resumoSaude.create({
             data: {
@@ -28,15 +26,23 @@ export class ResumoSaudeRepository {
                     connect: data.dispositivosIds?.map(id => ({ id })) || []
                 }
             },
-            include: { alertaDispositivos: true }
+            include: { plantacaoExibida: true, alertaDispositivos: true }
         });
     }
-    //passa o id para identificar, e deixa o data como partial (omitindo apenas o id para n deixar alterar o id)
-    //para que o usuário possa dar update apenas nas features que desejar
+
+    //só deu certo fazer assim
     public async update(id: number,
         data: Partial<Omit<ResumoSaude, 'id'>> & { dispositivosIds?: number[] }): Promise<ResumoSaude> {
-        return prisma.resumoSaude.update({ where: { id: id }, data }); //da update somente nos campos que não estão undefined
+        const updateData: any = {};
+        if (data.umidadeMedia !== undefined) updateData.umidadeMedia = data.umidadeMedia;
+        if (data.plantacaoExibidaId !== undefined) updateData.plantacaoExibidaId = data.plantacaoExibidaId;
+        if (data.dispositivosIds !== undefined) updateData.alertaDispositivos = { set: data.dispositivosIds.map(id => ({ id })) };
+        return prisma.resumoSaude.update({
+            where: { id: id },
+            data: updateData
+        }); //da update somente nos campos que não estão undefined
     }
+
 
     public async delete(id: number): Promise<ResumoSaude> {
         return prisma.resumoSaude.delete({ where: { id: id } });

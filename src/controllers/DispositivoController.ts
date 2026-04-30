@@ -9,7 +9,7 @@ export class DispositivoController {
     // POST /dispositivoes -> para criar um dispositivo, omitindo o campo de id pois é autoincrement no banco de dados
     post = async (
         request: FastifyRequest<{
-            Body: Omit<Dispositivo, 'id' | 'setorDeOperacao'> & { setorDeOperacaoId: number }
+            Body: Omit<Dispositivo, 'id' | 'setorDeOperacao'> & { setorDeOperacaoId: number; sensoresIds: number[]; resumosIds: number[] }
         }>,
         reply: FastifyReply) => {
         const dispositivo = request.body; //aqui a informação para criar o dispositivo é passada no corpo do http
@@ -59,7 +59,8 @@ export class DispositivoController {
             );
             reply.status(200).send(json);
         } catch (error) {
-            reply.status(404).send({ message: 'Dispositivo not found' });
+            console.log(error)
+            reply.status(404).send({ message: 'Dispositivo not found'});
         }
     };
 

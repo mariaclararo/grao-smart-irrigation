@@ -38,39 +38,39 @@ export class FuncionarioRepository {
             },
             // O include garante que o objeto retornado já venha com os dados do usuário
             include: {
-                usuario: true
+                usuario: true,
+                empregador: true
             }
         });
     }
-    //update
+
+    //update por cada atributo para conseguir manter relacionamento e parcialidade
     public async update(id: number, data: Partial<CreateFuncionarioDTO>): Promise<Funcionario> {
-        // Filter undefined values from all top-level fields
-        const funcionarioUpdate = omitUndefined({
-            especialidade: data.especialidade,
-            empregadorId: data.empregadorId
-        });
-
-        // Filter undefined values from usuario fields
-        const usuarioUpdate = omitUndefined({
-            nome: data.nome,
-            email: data.email,
-            senha: data.senha
-        });
-
-        const updateData: any = {
-            ...funcionarioUpdate,
-            // Only include usuario if there are fields to update
-            ...(Object.keys(usuarioUpdate).length > 0 && {
-                usuario: { update: usuarioUpdate }
-            })
-        };
-
-        return prisma.funcionario.update({
-            where: { id },
-            data: updateData,
-            include: { usuario: true }
-        });
+    const updateData: any = {};
+    if (data.especialidade !== undefined) {
+        updateData.especialidade = data.especialidade;
     }
+    if (data.empregadorId !== undefined) {
+        updateData.empregador = {
+            connect: { id: data.empregadorId }
+        };
+    }
+    const usuarioUpdate = omitUndefined({
+        nome: data.nome,
+        email: data.email,
+        senha: data.senha
+    });
+    if (Object.keys(usuarioUpdate).length > 0) {
+        updateData.usuario = { 
+            update: usuarioUpdate 
+        };
+    }
+    return prisma.funcionario.update({
+        where: { id },
+        data: updateData,
+        include: { usuario: true }
+    });
+}
     //delete
     public async delete(id: number): Promise<Funcionario> {
         //precisa deletar primeiro funcionario (herda) depois usuario (classe mãe)
