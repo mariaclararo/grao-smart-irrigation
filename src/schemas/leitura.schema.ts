@@ -24,6 +24,7 @@ export const getLeituraSchema = {
     schema: {
         tags: ['Leituras'],
         summary: 'Lista todas as leituras realizadas pelos sensores',
+        security: [{ bearerAuth: [] }],
         response: { 200: { type: 'array', items: leituraSchema } },
     },
 }
@@ -32,6 +33,7 @@ export const getLeituraParamIdSchema = {
     schema: {
         tags: ['Leituras'],
         summary: 'Obtém uma leitura pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: leituraSchema,},
     },
 }
@@ -40,6 +42,7 @@ export const postLeituraSchema = {
     schema: {
         tags: ['Leituras'],
         summary: 'Cadastra uma nova leitura',
+        security: [{ bearerAuth: [] }],
         body: leituraBodySchema,
         response: { 201: leituraSchema },
     },
@@ -49,6 +52,7 @@ export const putLeituraParamIdSchema = {
     schema: {
         tags: ['Leituras'],
         summary: 'Atualiza uma leitura pelo ID',
+        security: [{ bearerAuth: [] }],
         body: leituraBodySchema,
         response: { 200: leituraSchema },
     },
@@ -58,6 +62,7 @@ export const deleteLeituraParamIdSchema = {
     schema: {
         tags: ['Leituras'],
         summary: 'Exclui uma leitura do sistema pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: leituraSchema },
     },
 }

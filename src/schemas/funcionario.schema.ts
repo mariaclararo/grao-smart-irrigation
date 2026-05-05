@@ -46,6 +46,7 @@ export const getFuncionarioSchema = {
     schema: {
         tags: ['Funcionários'],
         summary: 'Lista todos os funcionários com usuários no sistema',
+        security: [{ bearerAuth: [] }],
         response: { 200: { type: 'array', items: funcionarioSchema } },
     },
 }
@@ -54,6 +55,7 @@ export const getFuncionarioParamIdSchema = {
     schema: {
         tags: ['Funcionários'],
         summary: 'Obtém um funcionário pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: funcionarioSchema, },
     },
 }
@@ -62,6 +64,7 @@ export const postFuncionarioSchema = {
     schema: {
         tags: ['Funcionários'],
         summary: 'Cadastra um novo funcionário',
+        security: [{ bearerAuth: [] }],
         body: funcionarioBodySchema,
         response: { 201: funcionarioSchema },
     },
@@ -71,6 +74,7 @@ export const putFuncionarioParamIdSchema = {
     schema: {
         tags: ['Funcionários'],
         summary: 'Atualiza um funcionário pelo ID',
+        security: [{ bearerAuth: [] }],
         body: funcionarioBodySchema,
         response: { 200: funcionarioSchema },
     },
@@ -80,6 +84,7 @@ export const deleteFuncionarioParamIdSchema = {
     schema: {
         tags: ['Funcionários'],
         summary: 'Exclui um funcionário do sistema pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: funcionarioSchema },
     },
 }

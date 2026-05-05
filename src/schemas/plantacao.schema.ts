@@ -29,6 +29,7 @@ export const getPlantacaoSchema = {
     schema: {
         tags: ['Plantações'],
         summary: 'Lista todas as plantações cadastradas no sistema',
+        security: [{ bearerAuth: [] }],
         response: { 200: { type: 'array', items: plantacaoSchema } },
     },
 }
@@ -37,6 +38,7 @@ export const getPlantacaoParamIdSchema = {
     schema: {
         tags: ['Plantações'],
         summary: 'Obtém uma plantação pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: plantacaoSchema,},
     },
 }
@@ -45,6 +47,7 @@ export const postPlantacaoSchema = {
     schema: {
         tags: ['Plantações'],
         summary: 'Cadastra uma nova plantação',
+        security: [{ bearerAuth: [] }],
         body: plantacaoBodySchema,
         response: { 201: plantacaoSchema },
     },
@@ -54,6 +57,7 @@ export const putPlantacaoParamIdSchema = {
     schema: {
         tags: ['Plantações'],
         summary: 'Atualiza uma plantação pelo ID',
+        security: [{ bearerAuth: [] }],
         body: plantacaoBodySchema,
         response: { 200: plantacaoSchema },
     },
@@ -63,6 +67,7 @@ export const deletePlantacaoParamIdSchema = {
     schema: {
         tags: ['Plantações'],
         summary: 'Exclui uma plantação do sistema pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: plantacaoSchema },
     },
 }

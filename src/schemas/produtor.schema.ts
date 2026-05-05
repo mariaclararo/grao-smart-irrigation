@@ -49,6 +49,7 @@ export const getProdutorSchema = {
     schema: {
         tags: ['Produtores'],
         summary: 'Lista todos os produtores com usuários no sistema',
+        security: [{ bearerAuth: [] }],
         response: { 200: { type: 'array', items: produtorSchema } },
     },
 }
@@ -57,6 +58,7 @@ export const getProdutorParamIdSchema = {
     schema: {
         tags: ['Produtores'],
         summary: 'Obtém um produtor pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: produtorSchema, },
     },
 }
@@ -65,6 +67,7 @@ export const postProdutorSchema = {
     schema: {
         tags: ['Produtores'],
         summary: 'Cadastra um novo produtor',
+        security: [{ bearerAuth: [] }],
         body: produtorBodySchema,
         response: { 201: produtorSchema },
     },
@@ -74,6 +77,7 @@ export const putProdutorParamIdSchema = {
     schema: {
         tags: ['Produtores'],
         summary: 'Atualiza um produtor pelo ID',
+        security: [{ bearerAuth: [] }],
         body: produtorBodySchema,
         response: { 200: produtorSchema },
     },
@@ -83,6 +87,7 @@ export const deleteProdutorParamIdSchema = {
     schema: {
         tags: ['Produtores'],
         summary: 'Exclui um produtor do sistema pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: produtorSchema },
     },
 }

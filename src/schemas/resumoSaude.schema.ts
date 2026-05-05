@@ -39,6 +39,7 @@ export const getResumoSaudeSchema = {
     schema: {
         tags: ['Resumos de Saúde'],
         summary: 'Lista todas os resumos de saúde da plantação',
+        security: [{ bearerAuth: [] }],
         response: { 200: { type: 'array', items: resumoSaudeSchema } },
     },
 }
@@ -47,6 +48,7 @@ export const getResumoSaudeParamIdSchema = {
     schema: {
         tags: ['Resumos de Saúde'],
         summary: 'Obtém um resumo de saúde pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: resumoSaudeSchema,},
     },
 }
@@ -55,6 +57,7 @@ export const postResumoSaudeSchema = {
     schema: {
         tags: ['Resumos de Saúde'],
         summary: 'Cadastra um novo resumo de saúde',
+        security: [{ bearerAuth: [] }],
         body: resumoSaudeBodySchema,
         response: { 201: resumoSaudeSchema },
     },
@@ -64,6 +67,7 @@ export const putResumoSaudeParamIdSchema = {
     schema: {
         tags: ['Resumos de Saúde'],
         summary: 'Atualiza um resumo de saúde pelo ID',
+        security: [{ bearerAuth: [] }],
         body: resumoSaudeBodySchema,
         response: { 200: resumoSaudeSchema },
     },
@@ -73,6 +77,7 @@ export const deleteResumoSaudeParamIdSchema = {
     schema: {
         tags: ['Resumos de Saúde'],
         summary: 'Exclui uma resumo de saúde do sistema pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: resumoSaudeSchema },
     },
 }

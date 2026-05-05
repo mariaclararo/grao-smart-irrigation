@@ -26,6 +26,7 @@ export const getSetorSchema = {
     schema: {
         tags: ['Setores'],
         summary: 'Lista todos os setores presentes na plantação',
+        security: [{ bearerAuth: [] }],
         response: { 200: { type: 'array', items: setorSchema } },
     },
 }
@@ -34,6 +35,7 @@ export const getSetorParamIdSchema = {
     schema: {
         tags: ['Setores'],
         summary: 'Obtém um setor pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: setorSchema,},
     },
 }
@@ -42,6 +44,7 @@ export const postSetorSchema = {
     schema: {
         tags: ['Setores'],
         summary: 'Cadastra um novo setor',
+        security: [{ bearerAuth: [] }],
         body: setorBodySchema,
         response: { 201: setorSchema },
     },
@@ -51,6 +54,7 @@ export const putSetorParamIdSchema = {
     schema: {
         tags: ['Setores'],
         summary: 'Atualiza um setor pelo ID',
+        security: [{ bearerAuth: [] }],
         body: setorBodySchema,
         response: { 200: setorSchema },
     },
@@ -60,6 +64,7 @@ export const deleteSetorParamIdSchema = {
     schema: {
         tags: ['Setores'],
         summary: 'Exclui um setor do sistema pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: setorSchema },
     },
 }

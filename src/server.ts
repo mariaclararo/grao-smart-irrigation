@@ -14,6 +14,8 @@ import dispositivoRoutes from './routers/dispositivo.route.js';
 import sensorRoutes from './routers/sensor.route.js';
 import leituraRoutes from './routers/leitura.route.js';
 import notificacaoRoutes from './routers/notificacao.route.js';
+import authRoutes from './routers/auth.route.js';
+import { authMiddleware } from './middlewares/auth.middleware.js';
 
 const app = Fastify({ logger: true }); //instância Fastify
 
@@ -31,6 +33,15 @@ await app.register(fastifySwagger, {
             version: '1.0.0',
         },
         servers: [{ url: 'http://localhost:3000' }],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                }
+            }
+        }
     },
 })
 
@@ -49,6 +60,26 @@ app.register(dispositivoRoutes, { prefix: '/dispositivos' })
 app.register(sensorRoutes, { prefix: '/sensores' })
 app.register(leituraRoutes, { prefix: '/leituras' })
 app.register(notificacaoRoutes, { prefix: '/notificacoes' })
+app.register(authRoutes, { prefix: '/auth' })
+
+const PUBLIC_ROUTES = ['/auth/login', '/docs', '/docs/']
+
+app.addHook('onRequest', async (request, reply) => {
+    if (!request.url) {
+        reply.code(400).send({ error: 'Bad Request' })
+        return
+    }
+    const url = request.url!.split('?')[0] ?? request.url! // ignora query string
+    // Permite rotas públicas e tudo que começa com /docs (ex: /docs/static/...)
+    if (PUBLIC_ROUTES.includes(url) || url.startsWith('/docs')) {
+        return
+    }
+    // Sua lógica aqui (ex: validar JWT)
+    const token = request.headers.authorization
+    if (!token) {
+        reply.code(401).send({ error: 'Unauthorized' })
+    }
+})
 
 const start = async () => { // Função assíncrona chamada start
     try { // Inicia o servidor na porta 3000

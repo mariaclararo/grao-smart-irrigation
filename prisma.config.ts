@@ -9,7 +9,7 @@ export default defineConfig({
  //define onde estão as migrations
  path: "prisma/migrations",
  //define onde está o seed.ts
- //seed: "tsx prisma/seed.ts",
+ seed: "tsx prisma/seed.ts",
  },
  datasource: {
  // Define a conexão do banco de dados de forma segura

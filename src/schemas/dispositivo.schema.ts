@@ -27,6 +27,7 @@ export const getDispositivoSchema = {
     schema: {
         tags: ['Dispositivos'],
         summary: 'Lista todos as dispositivos presentes na plantação',
+        security: [{ bearerAuth: [] }],
         response: { 200: { type: 'array', items: dispositivoSchema } },
     },
 }
@@ -35,6 +36,7 @@ export const getDispositivoParamIdSchema = {
     schema: {
         tags: ['Dispositivos'],
         summary: 'Obtém um dispositivo pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: dispositivoSchema,},
     },
 }
@@ -43,6 +45,7 @@ export const postDispositivoSchema = {
     schema: {
         tags: ['Dispositivos'],
         summary: 'Cadastra um novo dispositivo',
+        security: [{ bearerAuth: [] }],
         body: dispositivoBodySchema,
         response: { 201: dispositivoSchema },
     },
@@ -52,6 +55,7 @@ export const putDispositivoParamIdSchema = {
     schema: {
         tags: ['Dispositivos'],
         summary: 'Atualiza um dispositivo pelo ID',
+        security: [{ bearerAuth: [] }],
         body: dispositivoBodySchema,
         response: { 200: dispositivoSchema },
     },
@@ -61,6 +65,7 @@ export const deleteDispositivoParamIdSchema = {
     schema: {
         tags: ['Dispositivos'],
         summary: 'Exclui um dispositivo do sistema pelo ID',
+        security: [{ bearerAuth: [] }],
         response: { 200: dispositivoSchema },
     },
 }
