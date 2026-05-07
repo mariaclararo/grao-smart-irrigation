@@ -74,10 +74,19 @@ app.addHook('onRequest', async (request, reply) => {
     if (PUBLIC_ROUTES.includes(url) || url.startsWith('/docs')) {
         return
     }
-    // Sua lógica aqui (ex: validar JWT)
-    const token = request.headers.authorization
+
+    /*const token = request.headers.authorization
     if (!token) {
         reply.code(401).send({ error: 'Unauthorized' })
+    }*/
+
+    try {
+        await authMiddleware(request, reply);
+    } catch (err) {
+        // Se o middleware não enviou o erro ainda, garantimos aqui
+        if (!reply.sent) {
+            reply.code(401).send({ error: 'Unauthorized' });
+        }
     }
 })
 

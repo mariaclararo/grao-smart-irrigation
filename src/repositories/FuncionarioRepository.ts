@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js';
 import type { Funcionario, Usuario } from '../../generated/prisma/client.js';
 import { omitUndefined } from '../utils/omitUndefined.js';
+import argon2 from 'argon2';
 
 //CRUD -> create, read, update, delete
 
@@ -18,6 +19,7 @@ export class FuncionarioRepository {
     }
     //create
     public async create(data: CreateFuncionarioDTO): Promise<Funcionario> {
+        const hash = await argon2.hash(data.senha);
         return prisma.funcionario.create({
             data: {
                 especialidade: data.especialidade,
@@ -31,7 +33,7 @@ export class FuncionarioRepository {
                     create: {
                         nome: data.nome,
                         email: data.email,
-                        senha: data.senha,
+                        senha: hash,
                         tipo: 'FUNCIONARIO'
                     }
                 }

@@ -1,2 +1,5 @@
 
 uma cultura só pode ser plantada em um setor
+
+como colocar permissões diferentes para usuários diferentes?
+    ex: funcionário não vai poder acessar todos os mesmos recursos que o produtor

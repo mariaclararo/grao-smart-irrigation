@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js';
 import type { Produtor, Usuario } from '../../generated/prisma/client.js';
 import { omitUndefined } from '../utils/omitUndefined.js';
+import argon2 from 'argon2';
 
 //CRUD -> create, read, update, delete
 
@@ -19,6 +20,7 @@ export class ProdutorRepository {
     }
     //create
     public async create(data: CreateProdutorDTO): Promise<Produtor> {
+        const hash = await argon2.hash(data.senha);
         return prisma.produtor.create({
             data: {
                 cnpj: data.cnpj,
@@ -32,7 +34,7 @@ export class ProdutorRepository {
                     create: {
                         nome: data.nome,
                         email: data.email,
-                        senha: data.senha,
+                        senha: hash,
                         tipo: 'PRODUTOR'
                     }
                 }
