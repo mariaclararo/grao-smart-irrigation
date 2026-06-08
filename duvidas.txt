@@ -1,5 +1,19 @@
+duvidas para realmente tirar com o enzo:
+    - É só criar os formulários, ainda não aprendemos a fazer o vínculo com o backend/banco? -> Exemplo, validar o login feito com email e senha ja cadastrados
+    - Desse jeito que eu fiz é isso mesmo que vocês querem?
+    - "Plano" precisa de um formulário? O que eu fiz foi que um plano só pode estar vinculado à um produtor, mas os tipos de plano (junto com
+    suas características padrão), são os mesmos
+    - Mostrar os cadastros e logins que eu fiz e perguntar se era isso mesmo que era pra fazer
+    - Para o cadastro de plantações, eu pensei em deixar essa tela para os produtores terem acesso. Dessa forma, quando a gente integrar
+    com o back-end, existe alguma forma de vincular o id de quem criou ? Pois a plantação tem ID de produtor
+    - A organização do diretório do projeto fica assim mesmo?
+    - Eu chamo os components  no App.tsx e o App na main?
 
-uma cultura só pode ser plantada em um setor
+PROBLEMAS REAIS:
+- Como resolver o problema do ID do plano que é vinculado ao produtor ao ser cadastrado? Pois o plano ainda nao existe no momento
+em que o produtor está fazendo o cadastro e esse tbm não vai saber o id de plano nenhum (solução do gemini no notion)
 
-como colocar permissões diferentes para usuários diferentes?
-    ex: funcionário não vai poder acessar todos os mesmos recursos que o produtor
+- Mesma coisa, como que eu vou fazer o vínculo de Setor com plantação e cultura, sendo que quem estará cadastrando não vai saber qual o id que tem pra vincular?
+(por enquanto deixei como campo de escrita padrão só para já ter o layout)
+
+- Exato mesmo problema para o dispositivo que precisa do id do setor de operação
