@@ -21,9 +21,19 @@ const app = Fastify({ logger: true }); //instância Fastify
 
 //ajustes para usar o swagger
 await app.register(cors, {
-    origin: "*",
+    origin: (origin, cb) => {
+        if (!origin || origin === 'http://localhost:5173' || origin === 'http://localhost:3000') {
+            cb(null, true)
+            return
+        }
+        cb(new Error("Not allowed"), false)
+    },
+    credentials: true,
     methods: "*",
+    allowedHeaders: ['Content-Type', 'Authorization']
+    
 });
+
 
 await app.register(fastifySwagger, {
     openapi: {
@@ -71,7 +81,9 @@ app.addHook('onRequest', async (request, reply) => {
     }
     const url = request.url!.split('?')[0] ?? request.url! // ignora query string
     // Permite rotas públicas e tudo que começa com /docs (ex: /docs/static/...)
-    if (PUBLIC_ROUTES.includes(url) || url.startsWith('/docs')) {
+    if (PUBLIC_ROUTES.includes(url) || url.startsWith('/docs') ||
+        (url.startsWith('/produtores') && request.method === 'POST') //para deixar cadastrar produtor 
+    ){
         return
     }
 

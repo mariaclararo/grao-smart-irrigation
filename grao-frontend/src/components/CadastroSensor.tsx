@@ -1,49 +1,95 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Container, Box, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material';
+import { Container, Box, Button, Typography, FormControl, InputLabel, Select, MenuItem, FormHelperText, Alert, CircularProgress } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../api/axios';
+import { useAuth } from '../auth/AuthContext';
+import { jwtDecode } from 'jwt-decode';
+import HeaderBotaoTema from './HeaderBotaoTema';
 
 interface ISensor {
     tipo: string;
     unidadeMedida: string;
-    macDispositivo: string;
+    dispAssociadoId: number;
 }
 
 const schema = yup.object({
     tipo: yup.string().required('A seleção do tipo de sensor é obrigatória'),
     unidadeMedida: yup.string().required('A unidade de medida é obrigatória'),
-    macDispositivo: yup.string().required('O MAC Address do dispositivo associado é obrigatório')
-        .test('valida-mac-sensor', 'Formato de MAC inválido', (value) => {
-            if (!value) return false;
-            const padrao = value.replace(/[:.-]/g, "").trim();
-            return /^[0-9a-fA-F]{12}$/.test(padrao);
-        }),
+    dispAssociadoId: yup.number().typeError('Selecione um dispositivo').required('O dispositivo associado é obrigatório')
 }).required();
 
 function CadastroSensor() {
-    const {
-        register,
-        handleSubmit,
-        watch,
-        formState: { errors }
-    } = useForm<ISensor>({
+    const navigate = useNavigate();
+    const { token } = useAuth();
+    const [erro, setErro] = useState('');
+    const [dispositivos, setDispositivos] = useState<any[]>([]);
+    const [carregando, setCarregando] = useState(true);
+
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<ISensor>({
         resolver: yupResolver(schema),
         defaultValues: { tipo: '', unidadeMedida: '' }
     });
 
     const tipoSelecionado = watch("tipo");
 
-    const onSubmit = (data: ISensor) => {
-        console.log('Sensor enviado:', data);
-        alert(`Sensor do tipo ${data.tipo} cadastrado e vinculado ao MAC ${data.macDispositivo}!`);
+    useEffect(() => {
+        const carregarDispositivos = async () => {
+            if (!token) return;
+            try {
+                const usuario: any = jwtDecode(token);
+                const response = await api.get('/dispositivos', { headers: { Authorization: `Bearer ${token}` } });
+                const meusDisps = response.data.filter(
+                    (d: any) => d.setorDeOperacao?.plantacao?.proprietarioId === Number(usuario.id)
+                );
+                setDispositivos(meusDisps);
+            } catch (err) {
+                setErro("Erro ao carregar dispositivos disponíveis.");
+            } finally {
+                setCarregando(false);
+            }
+        };
+        carregarDispositivos();
+    }, [token]);
+
+    const onSubmit = async (data: ISensor) => {
+        try {
+            setErro('');
+
+            await api.post('/sensores', data);
+
+            alert(`Sensor do tipo ${data.tipo} cadastrado`);
+
+            navigate('/lista-sensores');
+
+        } catch (err: any) {
+            setErro(err.response?.data?.message || 'Erro ao conectar com o servidor.');
+        }
     };
 
+    if (carregando) return <Container sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress /></Container>;
+    
     return (
         <Container maxWidth="sm" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', py: 4 }}>
             <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <HeaderBotaoTema /> 
                 <Typography variant="h2">🌱 Cadastro de Sensor Transmissor</Typography>
+                {erro && <Alert severity="error">{erro}</Alert>}
 
-                <TextField label="MAC do Dispositivo Associado" {...register("macDispositivo")} placeholder="Ex: 00:1B:44:11:3A:B7" error={!!errors.macDispositivo} helperText={errors.macDispositivo?.message} />
+                <FormControl error={!!errors.dispAssociadoId}>
+                    <InputLabel id="select-disp-label">Dispositivo Associado (MAC)</InputLabel>
+                    <Select labelId="select-disp-label" defaultValue="" {...register("dispAssociadoId")}>
+                        <MenuItem value="" disabled>Selecione um Dispositivo</MenuItem>
+                        {dispositivos.map((d) => (
+                            <MenuItem key={d.id} value={d.id}>
+                                {d.macAddress} ({d.setorDeOperacao?.nome})
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    {errors.dispAssociadoId && <FormHelperText>{errors.dispAssociadoId.message}</FormHelperText>}
+                </FormControl>
 
                 <FormControl error={!!errors.tipo}>
                     <InputLabel id="select-tipo-label">Tipo do Sensor</InputLabel>

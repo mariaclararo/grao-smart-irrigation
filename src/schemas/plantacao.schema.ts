@@ -12,15 +12,12 @@ const plantacaoSchema = {
 
 const plantacaoBodySchema = {
     type: 'object',
-    required: ['nomeFazenda', 'localizacao', 'totalHectares', 'proprietarioId', 'nomeSetor', 'areaSetor', 'espacamentoTubos', 'culturaId'],
+    required: ['nomeFazenda', 'localizacao', 'totalHectares'],
     properties: {
         nomeFazenda: { type: 'string' },
         localizacao: { type: 'string' },
         totalHectares: { type: 'number' },
-        proprietarioId: { type: 'integer' },
-        nomeSetor: { type: 'string' },
-        areaSetor: { type: 'number' },
-        espacamentoTubos: { type: 'number' },
+        cnpjProdutor: { type: 'string' },
         culturaId: { type: 'integer' }
     },
 } as const

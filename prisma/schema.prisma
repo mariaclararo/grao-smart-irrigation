@@ -30,12 +30,15 @@ model Usuario {
 }
 
 model Produtor {
-  id           Int           @id //recebe o id que foi gerado com autoincrement no usuario
-  usuario      Usuario       @relation("Produtor", fields: [id], references: [id])
-  cnpj         String        @unique //tbm não pode repetir
+  id      Int     @id //recebe o id que foi gerado com autoincrement no usuario
+  usuario Usuario @relation("Produtor", fields: [id], references: [id])
+  cnpj    String  @unique //tbm não pode repetir
 
-  planoId Int @unique
-  plano  Plano @relation(fields: [planoId], references: [id])
+  situacao String  @default("pago")
+  ativo    Boolean @default(true)
+
+  planoId      Int
+  plano        Plano         @relation(fields: [planoId], references: [id])
   //relações 1:N
   plantacoes   Plantacao[]
   funcionarios Funcionario[]
@@ -43,12 +46,12 @@ model Produtor {
 
 model Funcionario {
   id            Int     @id
-  usuario       Usuario @relation("Funcionario", fields: [id], references: [id])
+  usuario       Usuario @relation("Funcionario", fields: [id], references: [id], onDelete: Cascade)
   especialidade String
 
   //1:N com produtor, chave estrangeira fica aqui
   empregadorId Int
-  empregador   Produtor @relation(fields: [empregadorId], references: [id])
+  empregador   Produtor @relation(fields: [empregadorId], references: [id], onDelete: Cascade)
 }
 
 model Notificacao {
@@ -58,31 +61,29 @@ model Notificacao {
   timeStamp DateTime @default(now()) //cria instância no momento em que notificação é feita
   //relacionamento 1:N com usuário
   usuarioId Int
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
 
 model Plano {
-  id             Int     @id @default(autoincrement())
+  id             Int    @id @default(autoincrement())
   nome           String
   limiteHectares Float
   precoMensal    Float
-  situacao       String
-  ativo          Boolean
 
-  produtorAssinante Produtor ?
+  produtores Produtor[]
 }
 
 model Plantacao {
-  id            Int           @id @default(autoincrement())
-  nomeFazenda   String
-  localizacao   String
-  totalHectares Float
+  id             Int           @id @default(autoincrement())
+  nomeFazenda    String
+  localizacao    String
+  totalHectares  Float
   //relação 1:N com produtor (lado da chave estrangeira)
-  proprietarioId    Int
-  proprietario  Produtor      @relation(fields: [proprietarioId], references: [id])
+  proprietarioId Int
+  proprietario   Produtor      @relation(fields: [proprietarioId], references: [id], onDelete: Cascade)
   //relações 1:N c chave estrangeira do outro lado
-  setores       Setor[]
-  logResumos    ResumoSaude[]
+  setores        Setor[]
+  logResumos     ResumoSaude[]
 }
 
 model Setor {
@@ -93,9 +94,9 @@ model Setor {
 
   //relação 1:N c plantação (lado chave estrangeira)
   plantacaoId  Int
-  plantacao    Plantacao     @relation(fields: [plantacaoId], references: [id])
-  culturaId Int @unique
-  cultura Cultura @relation(fields: [culturaId], references: [id])
+  plantacao    Plantacao     @relation(fields: [plantacaoId], references: [id], onDelete: Cascade)
+  culturaId    Int           
+  cultura      Cultura       @relation(fields: [culturaId], references: [id], onDelete: Cascade)
   //relação 1:N com dispositivos
   dispositivos Dispositivo[]
 }
@@ -104,49 +105,49 @@ model ResumoSaude {
   id                 Int           @id @default(autoincrement())
   umidadeMedia       Float
   //relação 1:N c plantação (lado da chave estrangeira)
-  plantacaoExibidaId        Int
-  plantacaoExibida          Plantacao     @relation(fields: [plantacaoExibidaId], references: [id])
+  plantacaoExibidaId Int
+  plantacaoExibida   Plantacao     @relation(fields: [plantacaoExibidaId], references: [id], onDelete: Cascade)
   //relação N:N implícita com dispositivo
   alertaDispositivos Dispositivo[] @relation("DispositivoAlerta")
 }
 
 model Cultura {
-  id        Int    @id @default(autoincrement())
-  nome      String
-  variedade String
-  indiceKc  Float
+  id            Int    @id @default(autoincrement())
+  nome          String
+  variedade     String
+  indiceKc      Float
   //relacao 1:1 c setor
-  setorPlantado Setor?
+  setores Setor[]
 }
 
 model Dispositivo {
-  id            Int           @id @default(autoincrement())
-  macAddress    String        @unique //tbm não pode repetir
-  nivelBateria  Int
-  
-  setorDeOperacaoId       Int
-  setorDeOperacao         Setor         @relation(fields: [setorDeOperacaoId], references: [id])
-  sensores      Sensor[]
-  
+  id           Int    @id @default(autoincrement())
+  macAddress   String @unique //tbm não pode repetir
+  nivelBateria Int
+
+  setorDeOperacaoId Int
+  setorDeOperacao   Setor    @relation(fields: [setorDeOperacaoId], references: [id], onDelete: Cascade)
+  sensores          Sensor[]
+
   // Relacionamento N:N implícito com ResumoSaude [cite: 358, 369, 376]
-  indicadoResumos       ResumoSaude[] @relation("DispositivoAlerta")
+  indicadoResumos ResumoSaude[] @relation("DispositivoAlerta")
 }
 
 model Sensor {
-  id            Int           @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   tipo          String
   unidadeMedida String
-  
+
   dispAssociadoId Int
-  dispAssociado   Dispositivo   @relation(fields: [dispAssociadoId], references: [id])
-  leituras      Leitura[] //1:N
+  dispAssociado   Dispositivo @relation(fields: [dispAssociadoId], references: [id], onDelete: Cascade)
+  leituras        Leitura[] //1:N
 }
 
 model Leitura {
   id        Int      @id @default(autoincrement())
   valor     Float
   timeStamp DateTime @default(now())
-  
-  sensorRaizId  Int
-  sensorRaiz    Sensor   @relation(fields: [sensorRaizId], references: [id])
+
+  sensorRaizId Int
+  sensorRaiz   Sensor @relation(fields: [sensorRaizId], references: [id], onDelete: Cascade)
 }

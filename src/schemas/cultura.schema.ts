@@ -33,7 +33,7 @@ export const getCulturaParamIdSchema = {
         tags: ['Culturas'],
         summary: 'Obtém uma cultura pelo ID',
         security: [{ bearerAuth: [] }],
-        response: { 200: culturaSchema,},
+        response: { 200: culturaSchema, },
     },
 }
 

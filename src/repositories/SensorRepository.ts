@@ -6,7 +6,18 @@ import type { Sensor } from '../../generated/prisma/client.js';
 export class SensorRepository {
     //promete que quando o banco retornar com o findMany, vai entregar uma lista de sensores (Sensor[])
     public async findAll(): Promise<(Sensor & { valorUltimaLeitura: number })[]> {
-        const sensores = await prisma.sensor.findMany({ include: { leituras: true } });
+        const sensores = await prisma.sensor.findMany({include: {
+            leituras: true,
+                dispAssociado: {
+                    include: {
+                        setorDeOperacao: {
+                            include: {
+                                plantacao: true
+                            }
+                        }
+                    }
+                }
+            } });
 
         return sensores.map(sensor => ({
             ...sensor,
@@ -17,7 +28,18 @@ export class SensorRepository {
     }
 
     public async findById(id: number): Promise<(Sensor & { valorUltimaLeitura: number }) | null> {
-        const sensor = await prisma.sensor.findUnique({ where: { id: id }, include: { leituras: true } });
+        const sensor = await prisma.sensor.findUnique({ where: { id: id }, include: {
+            leituras: true,
+                dispAssociado: {
+                    include: {
+                        setorDeOperacao: {
+                            include: {
+                                plantacao: true
+                            }
+                        }
+                    }
+                }
+            } });
 
         if(!sensor) return null;
         return {

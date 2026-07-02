@@ -24,6 +24,8 @@ export class ProdutorRepository {
         return prisma.produtor.create({
             data: {
                 cnpj: data.cnpj,
+                situacao: 'pago',
+                ativo: true,
                 // Conectamos ao plano já existente no banco
                 plano: {
                     connect: { id: data.planoId }
@@ -46,11 +48,19 @@ export class ProdutorRepository {
         });
     }
     //update (mudei para resolver problema com id do plano)
-    public async update(id: number, data: Partial<CreateProdutorDTO>): Promise<Produtor> {
+    public async update(id: number, data: Partial<CreateProdutorDTO> & { situacao?: string, ativo?: boolean}): Promise<Produtor> {
         const updateData: any = {};
 
         if (data.cnpj !== undefined) {
             updateData.cnpj = data.cnpj;
+        }
+
+        if (data.situacao !== undefined) {
+            updateData.situacao = data.situacao;
+        }
+
+        if (data.ativo !== undefined) {
+            updateData.ativo = data.ativo;
         }
 
         if (data.planoId !== undefined) {
@@ -78,15 +88,28 @@ export class ProdutorRepository {
         });
     }
     //delete
-    public async delete(id: number): Promise<Produtor> {
-        //precisa deletar primeiro produtor (herda) depois usuario (classe mãe)
-        //para ainda assim retornar o produtor deletado, usa transaction
-        const [deletado] = await prisma.$transaction([
-            prisma.produtor.delete({ where: { id: id } }),
-            prisma.usuario.delete({ where: { id: id } })
-        ])
+   public async delete(id: number): Promise<Produtor> {
+        const produtorInfo = await prisma.produtor.findUnique({
+            where: { id: id },
+            include: { funcionarios: true }
+        });
+        if (!produtorInfo) {
+            throw new Error("Produtor não encontrado");
+        }
 
-        return deletado;
+        const idsUsuariosFuncionarios = produtorInfo.funcionarios.map(func => func.id);
+        const [usuariosDeletados, produtorDeletado, usuarioDeletado] = await prisma.$transaction([
+            prisma.usuario.deleteMany({
+                where: { id: { in: idsUsuariosFuncionarios } }
+            }),
+            prisma.produtor.delete({ 
+                where: { id: id } 
+            }),
+            prisma.usuario.delete({ 
+                where: { id: produtorInfo.id } 
+            })
+        ]);
+        return produtorDeletado;
     }
 
 }

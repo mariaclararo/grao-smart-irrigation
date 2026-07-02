@@ -10,5 +10,6 @@ async function plantacaoRoutes(fastify: FastifyInstance) {
   fastify.post('/', postPlantacaoSchema, plantacaoController.post);
   fastify.put('/:id', putPlantacaoParamIdSchema, plantacaoController.putParamId);
   fastify.delete('/:id', deletePlantacaoParamIdSchema, plantacaoController.deleteParamId);
+  fastify.post('/:id/diagnostico', plantacaoController.gerarDiagnostico.bind(plantacaoController));
 }
 export default plantacaoRoutes;

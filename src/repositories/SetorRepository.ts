@@ -6,7 +6,9 @@ import type { Setor } from '../../generated/prisma/client.js';
 export class SetorRepository {
     //promete que quando o banco retornar com o findMany, vai entregar uma lista de setores (Setor[])
     public async findAll(): Promise<Setor[]> {
-        return prisma.setor.findMany();
+        return prisma.setor.findMany({
+            include: { plantacao: true, cultura: true }
+        });
     }
     public async findById(id: number): Promise<Setor | null> {
         return prisma.setor.findUnique({ where: { id: id } });

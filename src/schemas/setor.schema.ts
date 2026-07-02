@@ -6,7 +6,27 @@ const setorSchema = {
         areaHectares: { type: 'number' },
         espacamentoTubos: { type: 'number' },
         plantacaoId: { type: 'integer' },
-        culturaId: { type: 'integer' }
+        culturaId: { type: 'integer' },
+
+        plantacao: {
+            type: 'object',
+            nullable: true,
+            properties: {
+                proprietarioId: { type: 'integer' },
+                nomeFazenda: { type: 'string' }
+            }
+        },
+
+        cultura: {
+            type: 'object',
+            nullable: true,
+            properties: {
+                id: { type: 'integer' },
+                nome: { type: 'string' },
+                variedade: { type: 'string' },
+                indiceKc: { type: 'number' }
+            }
+        }
     },
 } as const
 
@@ -36,7 +56,7 @@ export const getSetorParamIdSchema = {
         tags: ['Setores'],
         summary: 'Obtém um setor pelo ID',
         security: [{ bearerAuth: [] }],
-        response: { 200: setorSchema,},
+        response: { 200: setorSchema, },
     },
 }
 

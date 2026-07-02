@@ -5,7 +5,28 @@ export const sensorSchema = {
         id: { type: 'integer' },
         tipo: { type: 'string', enum: ['Umidade', 'Fluxo'] },
         unidadeMedida: { type: 'string' },
-        dispAssociadoId: { type: 'integer' }
+        dispAssociadoId: { type: 'integer' },
+        dispAssociado: {
+            type: 'object',
+            nullable: true,
+            properties: {
+                macAddress: { type: 'string' },
+                setorDeOperacao: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        nome: { type: 'string' },
+                        plantacao: {
+                            type: 'object',
+                            nullable: true,
+                            properties: {
+                                proprietarioId: { type: 'integer' }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     },
 } as const
 

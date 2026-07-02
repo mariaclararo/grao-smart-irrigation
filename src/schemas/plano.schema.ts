@@ -5,21 +5,17 @@ const planoSchema = {
         nome: { type: 'string' },
         limiteHectares: { type: 'number' },
         precoMensal: { type: 'number' },
-        situacao: { type: 'string' },
-        ativo: { type: 'boolean' }
     },
 } as const
 
 
 const planoBodySchema = {
     type: 'object',
-    required: ['nome', 'limiteHectares', 'precoMensal', 'situacao', 'ativo'],
+    required: ['nome', 'limiteHectares', 'precoMensal'],
     properties: {
         nome: { type: 'string' },
         limiteHectares: { type: 'number' },
-        precoMensal: { type: 'number' },
-        situacao: { type: 'string'},
-        ativo: { type: 'boolean' }
+        precoMensal: { type: 'number' }
     },
 } as const
 

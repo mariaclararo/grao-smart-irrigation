@@ -17,8 +17,6 @@ const planoSchema = {
         nome: { type: 'string' },
         limiteHectares: { type: 'number' },
         precoMensal: { type: 'number' },
-        situacao: { type: 'string' },
-        ativo: { type: 'boolean' }
     }
 } as const
 
@@ -28,6 +26,8 @@ const produtorSchema = {
         id: { type: 'integer' },
         cnpj: { type: 'string' },
         planoId: { type: 'integer' },
+        situacao: { type: 'string' },
+        ativo: { type: 'boolean' },
         usuario: usuarioSchema,
         plano: planoSchema
     },
@@ -35,13 +35,13 @@ const produtorSchema = {
 
 const produtorBodySchema = {
     type: 'object',
-    required: ['nome', 'email', 'senha', 'cnpj', 'planoId'],
+    required: ['nome', 'email', 'senha', 'cnpj', 'plano'],
     properties: {
         nome: { type: 'string' },
         email: { type: 'string' },
         senha: { type: 'string' },
         cnpj: { type: 'string' },
-        planoId: { type: 'integer' }
+        plano: { type: 'string' }
     },
 } as const
 

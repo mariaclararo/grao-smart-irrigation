@@ -32,13 +32,13 @@ const funcionarioSchema = {
 
 const funcionarioBodySchema = {
     type: 'object',
-    required: ['nome', 'email', 'senha', 'especialidade', 'empregadorId'],
+    required: ['nome', 'email', 'senha', 'especialidade', 'cnpjEmpregador'],
     properties: {
         nome: { type: 'string' },
         email: { type: 'string' },
         senha: { type: 'string' },
         especialidade: { type: 'string' },
-        empregadorId: { type: 'integer' }
+        cnpjEmpregador: { type: 'string' }
     },
 } as const
 

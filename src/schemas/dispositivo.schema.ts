@@ -8,14 +8,30 @@ const dispositivoSchema = {
         macAddress: { type: 'string' },
         nivelBateria: { type: 'integer' },
         setorDeOperacaoId : { type: 'integer' },
-        sensores: { type: 'array', items: sensorSchema }, //obrigatorio, mas pode inicializar com vetor vazio
-        indicadoResumos: { type: 'array', items: resumoSaudeSchema}
+        //sensores: { type: 'array', items: sensorSchema }, //obrigatorio, mas pode inicializar com vetor vazio
+        //indicadoResumos: { type: 'array', items: resumoSaudeSchema},
+
+        setorDeOperacao: {
+            type: 'object',
+            nullable: true,
+            properties: {
+                nome: { type: 'string' },
+                plantacao: {
+                    type: 'object',
+                    nullable: true,
+                    properties: {
+                        proprietarioId: { type: 'integer' },
+                        nomeFazenda: { type: 'string' }
+                    }
+                }
+            }
+        }
     },
 } as const
 
 const dispositivoBodySchema = {
     type: 'object',
-    required: ['macAddress', 'nivelBateria', 'setorDeOperacaoId', 'sensores', 'indicadoResumos'],
+    required: ['macAddress', 'nivelBateria', 'setorDeOperacaoId'],
     properties: {
         macAddress: { type: 'string' },
         nivelBateria: { type: 'integer' },

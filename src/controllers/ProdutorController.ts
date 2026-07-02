@@ -3,18 +3,45 @@ import { ProdutorRepository } from '../repositories/ProdutorRepository.js';
 import type { CreateProdutorDTO } from '../repositories/ProdutorRepository.js';
 import type { Produtor } from '../../generated/prisma/client.js';
 
+interface IProdutorFormInput {
+    nome: string;
+    email: string;
+    senha: string;
+    cnpj: string;
+    plano: string; 
+}
+
 export class ProdutorController {
     private produtorRepository = new ProdutorRepository();
 
     //create
     post = async (
         request: FastifyRequest<{
-            Body: CreateProdutorDTO
+            Body: IProdutorFormInput
         }>,
         reply: FastifyReply) => {
-        const produtor = request.body; //aqui a informação para criar o poder é passada no corpo do http
-        const json = await this.produtorRepository.create(produtor); //await para esperar o promise
-        reply.status(201).send(json); //json é o objeto poder criado retornado pela função create dps de ser executada pelo prisma
+            try{
+                const produtor = request.body; //aqui a informação para criar o poder é passada no corpo do http
+
+                let planoIdConvertido = 1; //start é plano default
+                if(produtor.plano === 'prime') planoIdConvertido = 2;
+                if(produtor.plano === 'master') planoIdConvertido = 3;
+
+                const produtorFormatado = {
+                    nome: produtor.nome,
+                    email: produtor.email,
+                    senha: produtor.senha,
+                    cnpj: produtor.cnpj,
+                    situacao: 'ativo',
+                    ativo: true,
+                    planoId: planoIdConvertido
+                }
+
+                const json = await this.produtorRepository.create(produtorFormatado); //await para esperar o promise
+                reply.status(201).send(json);
+            } catch(error: any) {
+                reply.status(400).send({ message: error.message || 'Erro ao cadastrar produtor' });
+            }
     };
 
     //read
@@ -44,15 +71,28 @@ export class ProdutorController {
     putParamId = async (
             request: FastifyRequest<{
             Params: { id: string },
-            Body: CreateProdutorDTO}>, 
+            Body: any}>, 
             reply: FastifyReply) => {
         const { id } = request.params;
-        const data = request.body; 
+        const data = request.body as Record<string, any>; 
 
         try {
+            const updateData = { ...data };
+            if (updateData.plano) {
+                if (updateData.plano === 'start') updateData.planoId = 1;
+                if (updateData.plano === 'prime') updateData.planoId = 2;
+                if (updateData.plano === 'master') updateData.planoId = 3;
+                
+                // Remove a propriedade de texto pois o Repositório do Prisma aceita apenas "planoId" numérico
+                delete updateData.plano;
+            }
+
+            if (updateData.senha === "") {
+                delete updateData.senha;
+            }
             const json = await this.produtorRepository.update(
                 parseInt(id),
-                data
+                updateData
             );
             reply.status(200).send(json);
         } catch (error) {

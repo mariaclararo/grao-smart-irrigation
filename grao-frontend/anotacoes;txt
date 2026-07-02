@@ -1,0 +1,49 @@
+Página seguinte de funcionário:
+    - Listagem de funcionários: Tabela mostrando a equipe, cargos e CNPJ do empregador
+
+Página seguinte de plantação:
+    - Listagem de plantações: Tabela exibindo as fazendas cadastradas e seus hectares totais
+
+Página seguinte de setor:
+    - Listagem de setores: Tabela mostrando as divisões de terra e espaçamento de tubos
+
+Página seguinte de cultura:
+    - Listagem de culturas: Tabela agronômica com as variedades de café e índices Kc
+
+Página seguinte de dispositivo:
+    - Listagem de dispositivos: Tabela com as placas ativas no campo e nível de bateria
+
+Página seguinte de sensor:
+    - Listagem de sensores: Tabela mostrando os tipos (Umidade/Fluxo) e a qual MAC pertencem
+
+Página seguinte de Formulário de Manutenção (se souber fazer rota correta):
+    - Listagem de plantações: Linha do tempo ou tabela com relatórios técnicos salvos.
+
+
+##############################################################
+
+COMO EU VALIDEI MEU SISTEMA:
+    1. Se eu tento acessar uma rota protegida direto pelo navegador (ex: http://localhost:5173/cadastro-setor), ele me redireciona para a página de login;
+    2. Botão direito -> inspecionar -> Aplicação -> Local storage está vazio
+    3. Muda de Application para Network;
+    4. Faz login com credencial que ja existe (joao@grao.com senha123)
+    5. Aparece mensagem de autenticação concluída e redireciona para a página de Home;
+    6. Na aba Network sobre um status 200 OK
+    7. Na aba application local storage, se expandir a seta, pega exatamente no localhoste ve o token lá
+    8. Mudei URL manualmente (pq ainda não corrigi o home) para /cadastro-plantacao
+    
+
+
+###################################################################
+
+MUDANÇAS:
+    - Home eu quero que tenha um botao que direcione para cada atividade (cada formulario) e tambem para páginas apenas de visualização de g´raficos
+    - É a interface inicial do sistema que eu preciso desenvolver pra ficar hype
+    - Botão de voltar para todos os formularios de cadastro
+
+
+- Não é só GET que precisa fazer os formularios
+- Se eu entendi direito o que ele falou é get, put , post e delete algo assim (inserir, alterar e remover)
+    - Alterar: mudar infos perfil
+    - Remover: deletar perfil, deletar fazenda, etc.
+    - Isso de 5 coisas diferentes

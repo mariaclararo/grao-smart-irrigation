@@ -1,7 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Container, Box, TextField, Button, Typography } from '@mui/material';
+import { Container, Box, TextField, Button, Typography, Alert } from '@mui/material';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import api from '../api/axios';
+import HeaderBotaoTema from './HeaderBotaoTema';
 
 interface ILogin {
     email: string;
@@ -14,6 +19,9 @@ const schema = yup.object({
 }).required();
 
 function Login() {
+    const { setToken } = useAuth();
+    const navigate = useNavigate();
+    const [erroRequisicao, setErroRequisicao] = useState('');
     const {
         register,
         handleSubmit,
@@ -22,15 +30,33 @@ function Login() {
         resolver: yupResolver(schema)
     });
 
-    const onSubmit = (data: ILogin) => {
-        console.log('Login enviado:', data);
-        alert(`Autenticando usuário: ${data.email}`);
+    const onSubmit = async (data: ILogin) => {
+        try {
+            setErroRequisicao('');
+
+            const response = await api.post('/auth/login', {
+                email: data.email,
+                senha: data.senha
+            });
+
+            const { token } = response.data;
+            setToken(token);
+            alert('Autenticação concluída.')
+            navigate('/'); // Manda para a rota protegida default (Home)
+
+        } catch (err: any) {
+            setErroRequisicao(err.response?.data?.message || 'Erro ao conectar com o servidor.');
+        }
     };
 
     return (
         <Container maxWidth="xs" sx={{ height: '100vh', display: 'flex', alignItems: 'center' }}>
-            <Box component="form" onSubmit={handleSubmit(onSubmit)} sx = {{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2}}>
-                <Typography variant="h2"> 🌱 G.R.A.O. Login</Typography>
+            <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <HeaderBotaoTema mostrarVoltar={ false }/> {/*chama o tema*/}
+                <Typography variant="h2" sx={{ textAlign: 'center', mb: 1 }}> 🌱 G.R.A.O. Login</Typography>
+
+                {erroRequisicao && <Alert severity="error">{erroRequisicao}</Alert>}
+
                 <TextField
                     label="Email"
                     placeholder='Ex: fulano@dominio.com'
@@ -46,9 +72,18 @@ function Login() {
                     error={!!errors.senha}
                     helperText={errors.senha?.message}
                 />
-                
+
                 <Button type="submit" variant="contained" fullWidth>
                     Enviar
+                </Button>
+
+                <Button
+                    variant="text"
+                    fullWidth
+                    onClick={() => navigate('/cadastro-produtor')} 
+                    sx={{ textTransform: 'none', fontWeight: 'bold', color: '#bea9a9', '&:hover': { color: '#fff' } }}
+                >
+                    Não tem uma conta? Cadastre-se como Produtor
                 </Button>
             </Box>
         </Container>

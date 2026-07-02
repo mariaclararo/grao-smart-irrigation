@@ -1,0 +1,161 @@
+import { Container, Typography, Button, Box, Paper, Divider } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import { jwtDecode } from 'jwt-decode'; //para exlcuir conta do usuário atual
+import api from '../api/axios';
+import { useContext } from 'react'; 
+import { useTheme } from '@mui/material/styles'; 
+import { ThemeModeContext } from '../App';
+
+export default function Home() {
+  const navigate = useNavigate();
+  const { logout, token } = useAuth();
+
+  const theme = useTheme();
+  const { toggleTheme } = useContext(ThemeModeContext);
+
+  const handleDeletePerfil = async () => {
+    if (!token) {
+      alert("Erro de autenticação: Nenhum token encontrado.");
+      return;
+    }
+    const confirmacao = window.confirm(
+      "⚠️ ATENÇÃO: Tem certeza que deseja excluir permanentemente a sua conta?\n\nEsta ação apagará todos os seus dados, plantações e funcionários. Isso não pode ser desfeito."
+    );
+
+    if (confirmacao) {
+      try {
+        const usuario: any = jwtDecode(token);
+        const idProdutorLogado = usuario.id;
+
+        await api.delete(`/produtores/${idProdutorLogado}`);
+
+        alert("Conta excluída com sucesso!");
+        logout();
+      } catch (error) {
+        alert("Erro ao tentar excluir a conta. Tente novamente mais tarde.");
+      }
+    }
+  };
+
+
+  return (
+    <Container maxWidth="lg" sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+
+      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+         <Button onClick={toggleTheme} variant="contained" sx={{ backgroundColor: 'background.paper', color: 'text.primary', '&:hover': { backgroundColor: 'primary.main', color: '#fff' } }}>
+            {theme.palette.mode === 'dark' ? '☀️ Mudar para Claro' : '🌙 Mudar para Escuro'}
+         </Button>
+      </Box>
+      
+      <Box sx={{ p: 4, backgroundColor: '#513434', borderRadius: '15px', boxShadow: 3, width: '100%' }}>
+
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: '#408c42', mb: 1, textAlign: 'center' }}>
+          🌱 Painel do Produtor G.R.A.O.
+        </Typography>
+
+        <Typography variant="body1" sx={{ color: '#bea9a9', mb: 4, textAlign: 'center' }}>
+          Gestão de Recursos de Água e Otimização
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 3, mb: 3 }}>
+          <Paper sx={{ p: 2, backgroundColor: '#614343', borderRadius: '10px', width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.333% - 24px)' }, minWidth: '280px' }}>
+            <Typography variant="h6" sx={{ color: '#fff', fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+              👤 Meu Perfil
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={() => navigate('/alterar-perfil')}
+                sx={{ justifyContent: 'flex-start', textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#408c42', '&:hover': { backgroundColor: '#614343' } }}
+              >
+                ✏️ Alterar Meus Dados
+              </Button>
+
+              <Button
+                variant="contained"
+                color="error"
+                fullWidth
+                onClick={handleDeletePerfil}
+                sx={{ justifyContent: 'flex-start', textTransform: 'none', fontWeight: 'bold', color: '#000', '&:hover': { backgroundColor: '#614343' } }}
+              >
+                🗑️ Deletar Conta
+              </Button>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: 2, backgroundColor: '#614343', borderRadius: '10px', width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.333% - 24px)' }, minWidth: '280px' }}>
+            <Typography variant="h6" sx={{ color: '#fff', fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+              🚜 Gestão de Funcionários
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Button variant="contained" fullWidth onClick={() => navigate('/cadastro-funcionario')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#408c42', '&:hover': { backgroundColor: '#614343' } }}>
+                ➕ Novo Funcionário
+              </Button>
+              <Button variant="contained" fullWidth onClick={() => navigate('/lista-funcionarios')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#2e7d32', '&:hover': { backgroundColor: '#614343' } }}>
+                👥 Ver e Gerenciar Funcionários
+              </Button>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: 2, backgroundColor: '#614343', borderRadius: '10px', width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.333% - 24px)' }, minWidth: '280px' }}>
+            <Typography variant="h6" sx={{ color: '#fff', fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+              🍃 Gestão de Culturas
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Button variant="contained" fullWidth onClick={() => navigate('/cadastro-cultura')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#408c42', '&:hover': { backgroundColor: '#5d4037' } }}>
+                ➕ Nova Cultura
+              </Button>
+              <Button variant="contained" fullWidth onClick={() => navigate('/lista-culturas')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#2e7d32', '&:hover': { backgroundColor: '#5d4037' } }}>
+                🌱 Ver e Ajustar Culturas
+              </Button>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: 2, backgroundColor: '#614343', borderRadius: '10px', width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.333% - 24px)' }, minWidth: '280px' }}>
+            <Typography variant="h6" sx={{ color: '#fff', fontWeight: 'bold', mb: 2, textAlign: 'center' }}>🔌 Gestão de Dispositivos</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Button variant="contained" fullWidth onClick={() => navigate('/cadastro-dispositivo')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#408c42', '&:hover': { backgroundColor: '#5d4037' } }}>➕ Novo Dispositivo</Button>
+              <Button variant="contained" fullWidth onClick={() => navigate('/lista-dispositivos')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#2e7d32', '&:hover': { backgroundColor: '#5d4037' } }}>📡 Ver e Ajustar Dispositivos</Button>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: 2, backgroundColor: '#614343', borderRadius: '10px', width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.333% - 24px)' }, minWidth: '280px' }}>
+            <Typography variant="h6" sx={{ color: '#fff', fontWeight: 'bold', mb: 2, textAlign: 'center' }}>🌾 Gestão de Plantações</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Button variant="contained" fullWidth onClick={() => navigate('/cadastro-plantacao')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#408c42', '&:hover': { backgroundColor: '#5d4037' } }}>➕ Nova Plantação</Button>
+              <Button variant="contained" fullWidth onClick={() => navigate('/lista-plantacoes')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#2e7d32', '&:hover': { backgroundColor: '#5d4037' } }}>🗺️ Ver e Ajustar Plantações</Button>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: 2, backgroundColor: '#614343', borderRadius: '10px', width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.333% - 24px)' }, minWidth: '280px' }}>
+            <Typography variant="h6" sx={{ color: '#fff', fontWeight: 'bold', mb: 2, textAlign: 'center' }}>📡 Gestão de Sensores</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Button variant="contained" fullWidth onClick={() => navigate('/cadastro-sensor')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#408c42', '&:hover': { backgroundColor: '#5d4037' } }}>➕ Novo Sensor</Button>
+              <Button variant="contained" fullWidth onClick={() => navigate('/lista-sensores')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#2e7d32', '&:hover': { backgroundColor: '#5d4037' } }}>🔬 Ver e Ajustar Sensores</Button>
+            </Box>
+          </Paper>
+
+          <Paper sx={{ p: 2, backgroundColor: '#614343', borderRadius: '10px', width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.333% - 24px)' }, minWidth: '280px' }}>
+            <Typography variant="h6" sx={{ color: '#fff', fontWeight: 'bold', mb: 2, textAlign: 'center' }}>📐 Gestão de Setores</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Button variant="contained" fullWidth onClick={() => navigate('/cadastro-setor')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#408c42', '&:hover': { backgroundColor: '#5d4037' } }}>➕ Novo Setor</Button>
+              <Button variant="contained" fullWidth onClick={() => navigate('/lista-setores')} sx={{ textTransform: 'none', fontWeight: 'bold', color: '#000', backgroundColor: '#2e7d32', '&:hover': { backgroundColor: '#5d4037' } }}>🗺️ Ver e Gerenciar Setores</Button>
+            </Box>
+          </Paper>
+
+        </Box>
+
+        <Divider sx={{ my: 3, backgroundColor: '#bea9a9' }} />
+
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Button variant="outlined" color="error" onClick={logout} sx={{ fontWeight: 'bold', textTransform: 'none' }}>
+            🚪 Sair do G.R.A.O
+          </Button>
+        </Box>
+
+      </Box>
+    </Container>
+  );
+}

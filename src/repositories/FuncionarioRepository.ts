@@ -5,7 +5,7 @@ import argon2 from 'argon2';
 
 //CRUD -> create, read, update, delete
 
-// DTO: Omitimos IDs e o tipo (que será fixo como FUNCIONARIO)
+
 export type CreateFuncionarioDTO = Omit<Usuario, 'id' | 'tipo'> & Omit<Funcionario, 'id' | 'empregadorId'> & { empregadorId: number };
 
 export class FuncionarioRepository {
@@ -23,12 +23,9 @@ export class FuncionarioRepository {
         return prisma.funcionario.create({
             data: {
                 especialidade: data.especialidade,
-                // Conectamos ao empregador já existente no banco
                 empregador: {
                     connect: { id: data.empregadorId }
                 },
-                // Aqui o Prisma cria o registro na tabela Usuario primeiro
-                // e usa o ID gerado para criar o Funcionario 
                 usuario: {
                     create: {
                         nome: data.nome,
@@ -38,7 +35,6 @@ export class FuncionarioRepository {
                     }
                 }
             },
-            // O include garante que o objeto retornado já venha com os dados do usuário
             include: {
                 usuario: true,
                 empregador: true
@@ -46,7 +42,6 @@ export class FuncionarioRepository {
         });
     }
 
-    //update por cada atributo para conseguir manter relacionamento e parcialidade
     public async update(id: number, data: Partial<CreateFuncionarioDTO>): Promise<Funcionario> {
     const updateData: any = {};
     if (data.especialidade !== undefined) {

@@ -6,7 +6,7 @@ import type { Dispositivo } from '../../generated/prisma/client.js';
 export class DispositivoRepository {
 
     public async findAll(): Promise<Dispositivo[]> {
-        return prisma.dispositivo.findMany({ include: { setorDeOperacao: true, sensores: true, indicadoResumos: true } });
+        return prisma.dispositivo.findMany({ include: { setorDeOperacao: {include: { plantacao: true}}, sensores: true, indicadoResumos: true } });
     }
 
     public async findById(id: number): Promise<Dispositivo | null> {

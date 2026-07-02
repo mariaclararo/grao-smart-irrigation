@@ -1,7 +1,11 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Container, Box, TextField, Button, Typography, Grid, Paper } from '@mui/material';
+import { Container, Box, TextField, Button, Typography, Grid, Paper, Alert } from '@mui/material';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
+import api from '../api/axios';
+import HeaderBotaoTema from './HeaderBotaoTema';
 
 interface IProdutor {
     nome: string;
@@ -20,6 +24,8 @@ const schema = yup.object({
 }).required();
 
 function CadastroProdutor() {
+    const navigate = useNavigate();
+    const [erro, setErro] = useState('');
     const {
         register,
         handleSubmit,
@@ -33,10 +39,21 @@ function CadastroProdutor() {
 
     const planoSelecionado = watch("plano");
 
-    const onSubmit = (data: IProdutor) => {
-        console.log('Produtor enviado:', data);
-        alert(`Cadastro de ${data.nome} realizado!`);
+    const onSubmit = async (data: IProdutor) => {
+        try {
+            setErro('');
+            
+            await api.post('/produtores', data); 
+            
+            alert(`Cadastro de ${data.nome} realizado!`);
+            
+            navigate('/login'); 
+            
+        } catch (err: any) {
+            setErro(err.response?.data?.message || 'Erro ao realizar o cadastro. Tente novamente.');
+        }
     };
+    
 
     const opcoesPlanos = [
         {id: 'start', titulo: 'G.R.A.O Start', hectares: 'Até 20 hectares', valor: 'R$ 450/mês' },
@@ -47,8 +64,15 @@ function CadastroProdutor() {
     return (
         <Container maxWidth="sm" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', py: 4}}>
             <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2}}>
+                <HeaderBotaoTema mostrarVoltar={ false }/> {/*chama o tema*/}
+                <Button 
+                    variant="text" 
+                    onClick={() => navigate('/login')} 
+                    sx={{ alignSelf: 'flex-start', color: 'text.secondary', mt: -1, mb: 1, fontWeight: 'bold' }}>
+                    ⬅ Voltar ao Login
+                </Button>
                 <Typography variant="h2">🌱 Cadastro de Produtor</Typography>
-                
+                {erro && <Alert severity="error">{erro}</Alert>}
                 <TextField label="Nome Completo" placeholder="Ex: Fulano da Silva" {...register("nome")} error={!!errors.nome} helperText={errors.nome?.message} />
                 <TextField label="CNPJ (14 dígitos alfanuméricos)" placeholder='Ex: AB123CDE456700' {...register("cnpj")} error={!!errors.cnpj} helperText={errors.cnpj?.message} />
                 <TextField label="Email" placeholder='Ex: fulano@dominio.com' {...register("email")} error={!!errors.email} helperText={errors.email?.message} />

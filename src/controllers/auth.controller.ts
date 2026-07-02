@@ -33,7 +33,7 @@ export const loginController = async (request: FastifyRequest<{
 
     //se a senha for válida eu devolvo o token (assinatura jwt)
     const token = jwt.sign(
-        { nome: usuario.nome, tipo: usuario.tipo },
+        { id: usuario.id, nome: usuario.nome, tipo: usuario.tipo },
         process.env.JWT_SECRET || 'secret', //esse secret é uma variável de inicialização do jwt, linha no arquivo .env
         { expiresIn: '1h' } //tem prazo de uma hora, dps precisa solicitar token novamente
     );

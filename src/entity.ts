@@ -1,21 +1,21 @@
-abstract class Usuario{
+abstract class Usuario {
     private _notificacoes: Notificacao[];
-    constructor(public id: number, public nome: string, protected _email: string, protected senha: string){
+    constructor(public id: number, public nome: string, protected _email: string, protected senha: string) {
         this._notificacoes = [];
     };
-    get email(): string{ return this._email;}
-    set email(email: string){this._email = email;}
+    get email(): string { return this._email; }
+    set email(email: string) { this._email = email; }
 
-    get notificacoes(): Notificacao[]{return this._notificacoes;}
-    set notificacoes(listaNotificacao: Notificacao[]){this._notificacoes = listaNotificacao}
+    get notificacoes(): Notificacao[] { return this._notificacoes; }
+    set notificacoes(listaNotificacao: Notificacao[]) { this._notificacoes = listaNotificacao }
 
-    public adicionarNotificacao(notificacao: Notificacao): void {this._notificacoes.push(notificacao);}
+    public adicionarNotificacao(notificacao: Notificacao): void { this._notificacoes.push(notificacao); }
 
-    public login(): void{
+    public login(): void {
         //entrar usuario no sistema
         console.log(`Usuário ${this.nome} logado`);
     }
-    public logout(): void{
+    public logout(): void {
         //sair usuario do sistema
         console.log(`Usuário ${this.nome} deslogado`);
     }
@@ -23,30 +23,41 @@ abstract class Usuario{
 }
 
 //usuários podem ser: produtores ou funcionários (herança)
-class Produtor extends Usuario{
-    constructor(public id: number, public nome: string, protected _email: string, protected senha: string, public cnpj: string, 
-                public plano: Plano, private _plantacoes:Plantacao[] = [], private _funcionarios: Funcionario[] = [] ) {
+class Produtor extends Usuario {
+    private _ativo: boolean;
+    constructor(public id: number, public nome: string, protected _email: string, protected senha: string, public cnpj: string,
+        public plano: Plano, private _situacao: string, private _plantacoes: Plantacao[] = [], private _funcionarios: Funcionario[] = []) {
         super(id, nome, _email, senha);
+        this._ativo = true;
+        this.atualizarStatus();
     }
 
-    get funcionarios(): Funcionario[]{return this._funcionarios;}
-    get plantacoes(): Plantacao[]{return this._plantacoes;}
+    get funcionarios(): Funcionario[] { return this._funcionarios; }
+    get plantacoes(): Plantacao[] { return this._plantacoes; }
 
-    set funcionarios(listaFuncs: Funcionario[]){this._funcionarios = listaFuncs;}
-    set plantacoes(listaPlant: Plantacao[]){this._plantacoes = listaPlant;}
+    set funcionarios(listaFuncs: Funcionario[]) { this._funcionarios = listaFuncs; }
+    set plantacoes(listaPlant: Plantacao[]) { this._plantacoes = listaPlant; }
 
-    public gerarRelatorioEconomia(Et0: number, kr:number): number {
+    get situacao(): string { return this._situacao; }
+    get ativo(): boolean { return this._ativo; }
+
+    set situacao(novaSituacao: string) {
+        this._situacao = novaSituacao;
+        this.atualizarStatus();
+    }
+
+    public gerarRelatorioEconomia(Et0: number, kr: number): number {
         let litrosEconomizados = 0;
-        this._plantacoes.forEach(plantacao=> {
-            plantacao.setores.forEach(setor =>{
+        this._plantacoes.forEach(plantacao => {
+            plantacao.setores.forEach(setor => {
                 const demandaTeorica = setor.calcularNecessidadeIrrigacao(Et0, 0, kr); //caso n chova nada hoje, min que vai precisar (gasto total, sem economia nenhuma)
                 let consumo = 0, temSensor = false;
                 //pegar leitura de todos os sensores de fluxo
-                setor.dispositivos.forEach(dispositivo =>{
+                setor.dispositivos.forEach(dispositivo => {
                     const sensoresFluxo = dispositivo.sensores.filter(s => s.tipo == 'Fluxo'); //filtra só os de fluxo
-                    if (sensoresFluxo.length > 0){
+                    if (sensoresFluxo.length > 0) {
                         temSensor = true;
-                        sensoresFluxo.forEach(sensor =>{consumo += sensor.valorUltimaLeitura});
+                        sensoresFluxo.forEach(sensor => { consumo += sensor.valorUltimaLeitura });
                     }
                 });
 
@@ -58,18 +69,25 @@ class Produtor extends Usuario{
         });
         if (litrosEconomizados >= 0) console.log(`Volume de água preservado: ${litrosEconomizados.toFixed(2)} Litros`);
         else console.log(`Volume de água gasto além do previsto: ${litrosEconomizados.toFixed(2)} Litros`);
-        console.log(`Status do Plano ${this.plano.nome}: ${this.plano.ativo ? 'EM FUNCIONAMENTO' : 'SUSPENSO'}`);
+        console.log(`Status do assinante do Plano ${this.plano.nome}: ${this.ativo ? 'EM FUNCIONAMENTO' : 'SUSPENSO'}`);
         return litrosEconomizados;
-        
+
     };
-    public cadastrarNovoFuncionario(funcionario: Funcionario): void{this._funcionarios.push(funcionario);}
-    public associarNovaPlantacao(plantacao: Plantacao): void{this._plantacoes.push(plantacao);}
+    public cadastrarNovoFuncionario(funcionario: Funcionario): void { this._funcionarios.push(funcionario); }
+    public associarNovaPlantacao(plantacao: Plantacao): void { this._plantacoes.push(plantacao); }
     public exibirMenuPrincipal(): string[] {
         return ['Gestão Hídrica', 'Monitorar Safra', 'Dados Plano']
     }
+
+    private atualizarStatus(): void {
+        if (this._situacao == 'pago' || this._situacao == 'pendente') this._ativo = true;
+        else this._ativo = false;
+    }
+
+
 }
 
-class Funcionario extends Usuario{
+class Funcionario extends Usuario {
     constructor(public id: number, public nome: string, protected _email: string, protected senha: string, public especialidade: string, public empregador: Produtor) {
         super(id, nome, _email, senha);
     }
@@ -85,69 +103,54 @@ class Funcionario extends Usuario{
 }
 
 //produtor - plano associação (produtor assina um plano)
-class Plano{
-    private _ativo: boolean;
-    constructor(public id: number, public nome: string, public limiteHectares: number, public precoMensal: number, private _situacao: string, public produtorAssinante: Produtor){
-        this._ativo = true; //assume que começa o plano pago e ativo
-    };
+class Plano {
+    constructor(public id: number, public nome: string, public limiteHectares: number, public precoMensal: number, public produtores: Produtor[]) {};
     
-    get situacao(): string{return this._situacao;}
-    get ativo(): boolean{return this._ativo;}
-
-    set situacao(novaSituacao: string){
-        this._situacao = novaSituacao;
-        this.atualizarStatus();
-    }
-    //ativo sem set pois o valor só muda c situacao
-
     public validarTamanho(areaPlantacao: number): boolean {
         return areaPlantacao <= this.limiteHectares;
     }
-    private atualizarStatus(): void{
-        if(this._situacao == 'pago' || this._situacao == 'pendente') this._ativo = true;
-        else this._ativo = false;
-    }
+
 }
 
 //para criar objeto de retorno no método da plantação
 //troquei para Classe para conseguir mapear melhor o bidirecional com dispositivos e plantação pro prisma (n tava conseguindo fazer sentido c interface)
 class ResumoSaude {
-    constructor(public id:number | undefined, public umidadeMedia: number, public plantacaoExibida: Plantacao, public alertaDispositivos: Dispositivo[] = []){};
+    constructor(public id: number | undefined, public umidadeMedia: number, public plantacaoExibida: Plantacao, public alertaDispositivos: Dispositivo[] = []) { };
 }
 
 //produtor -plantação agregação (produtor possui plantações)
 //plantacao setor composição (no mínimo 1 setor -> plantação inteira)
 //mais podem ser add depois
-class Plantacao{
+class Plantacao {
     public setores: Setor[] = [];
-    private _logResumos: ResumoSaude[] =[];
+    private _logResumos: ResumoSaude[] = [];
 
     constructor(public id: number, public nomeFazenda: string, public localizacao: string, public totalHectares: number, public proprietario: Produtor,
-                        idSetor: number, nomeSetor: string, areaHectares: number, espacamentoTubos: number, cultura: Cultura, ){
-            this.adicionarSetor(idSetor, nomeSetor, areaHectares, espacamentoTubos, cultura);
-        }
-    
-    get logResumos(): ResumoSaude[]{return this._logResumos;}
-    set logResumos(novoLog: ResumoSaude[]) {this._logResumos = novoLog;}
+        idSetor: number, nomeSetor: string, areaHectares: number, espacamentoTubos: number, cultura: Cultura,) {
+        this.adicionarSetor(idSetor, nomeSetor, areaHectares, espacamentoTubos, cultura);
+    }
 
-    public adicionarSetor(idSet: number, nomeSet: string, area: number, espacamento: number, cult: Cultura): void{
+    get logResumos(): ResumoSaude[] { return this._logResumos; }
+    set logResumos(novoLog: ResumoSaude[]) { this._logResumos = novoLog; }
+
+    public adicionarSetor(idSet: number, nomeSet: string, area: number, espacamento: number, cult: Cultura): void {
         const newSetor = new Setor(idSet, nomeSet, area, espacamento, this, cult);
         this.setores.push(newSetor);
     }
-    public getResumoSaude(): ResumoSaude{
-        let umidade = 0, numSetores=0;
+    public getResumoSaude(): ResumoSaude {
+        let umidade = 0, numSetores = 0;
         const alertaDispositivos: Dispositivo[] = [];
-        this.setores.forEach(setor =>{
+        this.setores.forEach(setor => {
             const aux = setor.getUmidadeMedia();
-            if(aux != -1){
+            if (aux != -1) {
                 umidade += aux;
                 numSetores++;
             }
             //verifica se tem dispositivos com bateria baixa para avisar
-            setor.dispositivos.forEach(disp=>{
-                if(!disp.verificarNivelBateria()) alertaDispositivos.push(disp);
+            setor.dispositivos.forEach(disp => {
+                if (!disp.verificarNivelBateria()) alertaDispositivos.push(disp);
             });
-        }); 
+        });
 
         //gera um ID aleatório
         const randId = crypto.getRandomValues(new Uint32Array(1))[0];
@@ -155,7 +158,7 @@ class Plantacao{
         const resumo = new ResumoSaude(randId, umidadeMedia, this, alertaDispositivos);
 
         //já linka com a lista de resumos em que o dispositivo em questão está associado e c os da plantação para garantir bidirecionalidade
-        alertaDispositivos.forEach(d =>{d.indicadoResumos.push(resumo);});
+        alertaDispositivos.forEach(d => { d.indicadoResumos.push(resumo); });
         this._logResumos.push(resumo);
 
         return resumo;
@@ -163,21 +166,21 @@ class Plantacao{
 }
 
 //setor - cultura (agregação)
-class Setor{
+class Setor {
     ;
-    constructor(public id: number, public nome: string, public areaHectares: number, public espacamentoTubos: number, public plantacao: Plantacao, 
-                public cultura: Cultura, private _dispositivos: Dispositivo[] = []){}
+    constructor(public id: number, public nome: string, public areaHectares: number, public espacamentoTubos: number, public plantacao: Plantacao,
+        public cultura: Cultura, private _dispositivos: Dispositivo[] = []) { }
 
-    get dispositivos(): Dispositivo[]{return this._dispositivos;}
-    set dispositivos(listaDisp: Dispositivo[]){this._dispositivos = listaDisp;}
+    get dispositivos(): Dispositivo[] { return this._dispositivos; }
+    set dispositivos(listaDisp: Dispositivo[]) { this._dispositivos = listaDisp; }
 
-    public associarDispositivo(disp: Dispositivo): void{this._dispositivos.push(disp);}
-    public getUmidadeMedia(): number{
+    public associarDispositivo(disp: Dispositivo): void { this._dispositivos.push(disp); }
+    public getUmidadeMedia(): number {
         let somaUmidade = 0, temSensor = 0;
-        this._dispositivos.forEach(disp =>{
-            const sensores = disp.sensores.filter(s=> s.tipo == 'Umidade');
-            sensores.forEach(sensor=>{
-                somaUmidade +=sensor.valorUltimaLeitura;
+        this._dispositivos.forEach(disp => {
+            const sensores = disp.sensores.filter(s => s.tipo == 'Umidade');
+            sensores.forEach(sensor => {
+                somaUmidade += sensor.valorUltimaLeitura;
                 temSensor++;
             });
         });
@@ -185,46 +188,46 @@ class Setor{
         //se tiver sensor retorna a media das umidades, se não retorna -1 para lidar c erro
         return temSensor > 0 ? (somaUmidade / temSensor) : -1;
     }
-    public calcularNecessidadeIrrigacao(Et0: number, precipitacao:number, kr: number): number{
-        const LI = (Et0*this.cultura.indiceKc*kr) - precipitacao; //calculo da necessidade de irrigacao
+    public calcularNecessidadeIrrigacao(Et0: number, precipitacao: number, kr: number): number {
+        const LI = (Et0 * this.cultura.indiceKc * kr) - precipitacao; //calculo da necessidade de irrigacao
         //se precipitou o suficiente para suprir a demanda hidrica do setor, a necessiade é 0
         const necessidade = LI > 0 ? LI : 0;
         //conversão para padrão de Litros
         const litros = necessidade * this.areaHectares * 10000;
         return litros;
     }
-    public possuiAnomaliaTubos(vazaoEsperada: number, tolerancia: number): number{
+    public possuiAnomaliaTubos(vazaoEsperada: number, tolerancia: number): number {
         let fluxo = 0;
-        
-        this._dispositivos.forEach(disp=>{
-            const sensores = disp.sensores.filter(s=> s.tipo == 'Fluxo');
+
+        this._dispositivos.forEach(disp => {
+            const sensores = disp.sensores.filter(s => s.tipo == 'Fluxo');
             sensores.forEach(s => fluxo += s.valorUltimaLeitura); //soma todas as leituras de fluxo
         })
 
         //nao tem fluxo mas tbm n esperava que tivesse
-        if(fluxo == 0 && vazaoEsperada == 0) return 0;
+        if (fluxo == 0 && vazaoEsperada == 0) return 0;
 
         //nao tem fluxo, mas era para ter -> possível cano entupido (-1)
-        if(fluxo == 0 && vazaoEsperada > 0) return -1;
+        if (fluxo == 0 && vazaoEsperada > 0) return -1;
 
         //calculo de diferenca percentual (pois tubos podem ter capacidades diferentes)
         const difPer = Math.abs(fluxo - vazaoEsperada) / vazaoEsperada;
 
-        if(difPer > tolerancia) return 1; //1 se for maior do que o tolerado, possível vazamento
+        if (difPer > tolerancia) return 1; //1 se for maior do que o tolerado, possível vazamento
         else return 0
     }
 }
 
-class Cultura{
+class Cultura {
     private kcOriginal: number; //guarda valor original para os cálculos
-    constructor(public id: number, public nome: string, public variedade: string, public indiceKc: number, public setorPlantado: Setor){
+    constructor(public id: number, public nome: string, public variedade: string, public indiceKc: number, public setores: Setor[]) {
         this.kcOriginal = indiceKc;
     };
     public ajustarKc(tempoPlantioMeses: number): void {
         let proporcao = 1.0;
 
-        if(tempoPlantioMeses < 6) proporcao = 0.85; //planta pequena, "gasta" 85% do Kc base
-        else if(tempoPlantioMeses <=18) proporcao = 1.15; //fase de pico de crescimento, "gasta" 115% do Kc base
+        if (tempoPlantioMeses < 6) proporcao = 0.85; //planta pequena, "gasta" 85% do Kc base
+        else if (tempoPlantioMeses <= 18) proporcao = 1.15; //fase de pico de crescimento, "gasta" 115% do Kc base
         else proporcao = 1; //estabiliza e mantém valor base
 
         this.indiceKc = this.kcOriginal * proporcao
@@ -233,90 +236,90 @@ class Cultura{
 
 //dispositivo - setor (agregacao)
 //dispositivo - sensor (agregação)~
-class Dispositivo{
+class Dispositivo {
     private _indicadoResumos: ResumoSaude[] = [];
-    constructor(public id: number, private _macAddress: string, private _nivelBateria: number, public setorDeOperacao: Setor, private _sensores: Sensor[] = []){
+    constructor(public id: number, private _macAddress: string, private _nivelBateria: number, public setorDeOperacao: Setor, private _sensores: Sensor[] = []) {
         //p validar
         this.macAddress = _macAddress;
         this.nivelBateria = _nivelBateria;
     }
 
-    get macAddress(): string{return this._macAddress;}
-    get nivelBateria(): number{return this._nivelBateria;}
-    get sensores(): Sensor[] {return this._sensores;}
-    get indicadoResumos(): ResumoSaude[]{return this._indicadoResumos;}
+    get macAddress(): string { return this._macAddress; }
+    get nivelBateria(): number { return this._nivelBateria; }
+    get sensores(): Sensor[] { return this._sensores; }
+    get indicadoResumos(): ResumoSaude[] { return this._indicadoResumos; }
 
-    set macAddress(ma: string){
+    set macAddress(ma: string) {
         //padroniza em formato corrido de hexa sem os ':' para armazenar no bd dps
         const padrao = ma.replace(/[:.-]/g, "").trim();
         //ve se tem exatamente 12 letras e se são validas para mac
         const isValid = /^[0-9a-fA-F]{12}$/.test(padrao);
-        if(isValid) this._macAddress = padrao;
+        if (isValid) this._macAddress = padrao;
     }
-    set nivelBateria(nivel: number){
-        if(nivel >= 0 && nivel <= 100) this._nivelBateria = nivel;
+    set nivelBateria(nivel: number) {
+        if (nivel >= 0 && nivel <= 100) this._nivelBateria = nivel;
     }
-    set sensores(listaSensores: Sensor[]){this._sensores = listaSensores;}
-    set indicadoResumos(resumos: ResumoSaude[]){this._indicadoResumos = resumos;}
+    set sensores(listaSensores: Sensor[]) { this._sensores = listaSensores; }
+    set indicadoResumos(resumos: ResumoSaude[]) { this._indicadoResumos = resumos; }
 
-    public verificarNivelBateria(): boolean{
-        if(this._nivelBateria <= 20){return false;} //indica baixo nível de bateria (valor que eu mesma decidi)
+    public verificarNivelBateria(): boolean {
+        if (this._nivelBateria <= 20) { return false; } //indica baixo nível de bateria (valor que eu mesma decidi)
         else return true;
     }
     public prepararPacoteDados(): Leitura[] {
         const pacote: Leitura[] = [];
         //pega a ultima leitura de cada um dos sensores associados para montar o pacote
-        this._sensores.forEach(sensor =>{
+        this._sensores.forEach(sensor => {
             const leitura = sensor.leituras.at(-1); //recebe ultima leitura
             //se nao for nula ou undefined
-            if(leitura) pacote.push(leitura); //pacote é de leituras, não só do valor (pensar em mudar depois)
+            if (leitura) pacote.push(leitura); //pacote é de leituras, não só do valor (pensar em mudar depois)
         }
         );
         return pacote;
     }
-    public adicionarSensor(sensor: Sensor): void{this._sensores.push(sensor);} //set de sensores
+    public adicionarSensor(sensor: Sensor): void { this._sensores.push(sensor); } //set de sensores
 }
 
-class Sensor{
+class Sensor {
     private _valorUltimaLeitura: number;
     private _leituras: Leitura[];
-    constructor(public id: number, public tipo: string, public unidadeMedida: string, public dispAssociado: Dispositivo){
+    constructor(public id: number, public tipo: string, public unidadeMedida: string, public dispAssociado: Dispositivo) {
         this._valorUltimaLeitura = 0;
         this._leituras = [];
     }; //tipo: 'Umidade' do solo ou 'Fluxo' de água
 
-    get valorUltimaLeitura(): number {return this._valorUltimaLeitura;}
-    get leituras(): Leitura[]{return this._leituras;}
+    get valorUltimaLeitura(): number { return this._valorUltimaLeitura; }
+    get leituras(): Leitura[] { return this._leituras; }
     //precisa validar valor antes de atualizar
-    public atualizarUltimoValor(leitura: Leitura): void{
-        if(this.validarValor(leitura.valor)){
+    public atualizarUltimoValor(leitura: Leitura): void {
+        if (this.validarValor(leitura.valor)) {
             this._valorUltimaLeitura = leitura.valor;
             this._leituras.push(leitura)
         }
     }
-    public validarValor(valor: number): boolean{
+    public validarValor(valor: number): boolean {
         if (valor < 0) return false;
         //validar valor por tipo
-        if(this.tipo == 'Umidade') return valor <= 100; //porcentagem entre 0 e 100
-        else return this.unidadeMedida == 'GPH' ? valor <= 540 : valor <=2044;
+        if (this.tipo == 'Umidade') return valor <= 100; //porcentagem entre 0 e 100
+        else return this.unidadeMedida == 'GPH' ? valor <= 540 : valor <= 2044;
     }
 
 }
 
-class Leitura{
-    constructor(public id: number, public valor: number, public timeStamp: Date, public sensorRaiz: Sensor){};
+class Leitura {
+    constructor(public id: number, public valor: number, public timeStamp: Date, public sensorRaiz: Sensor) { };
 }
 
-class Notificacao{
-    usuario:Usuario;
-    constructor(public id: number, private _mensagem: string, public lida: boolean, public timeStamp: Date, usuario: Usuario){
+class Notificacao {
+    usuario: Usuario;
+    constructor(public id: number, private _mensagem: string, public lida: boolean, public timeStamp: Date, usuario: Usuario) {
         this.usuario = usuario;
     };
 
-    get mensagem(): string {return this._mensagem;}
-    set mensagem(msg: string) {if((msg.length) > 0){this._mensagem = msg;}}
+    get mensagem(): string { return this._mensagem; }
+    set mensagem(msg: string) { if ((msg.length) > 0) { this._mensagem = msg; } }
 
-    public marcarComoLida(): void {this.lida = true;}
+    public marcarComoLida(): void { this.lida = true; }
 }
 
 console.log("Compilou")
