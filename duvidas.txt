@@ -1,1 +1,0 @@
-Eu posso mandar uma seed junto apenas para povoar o bd com os 3 planos?

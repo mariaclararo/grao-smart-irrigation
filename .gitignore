@@ -1,7 +1,16 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Dependencies, build output and local data
 node_modules/
 dist/
-*.dia~
-.DS_Store
-*.txt
-/generated/prisma
-volumes
+dist-ssr/
+coverage/
+volumes/
+generated/prisma/
+
+# Logs
+*.log

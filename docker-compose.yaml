@@ -4,7 +4,7 @@ services:
     volumes:
       - ./volumes/postgres/data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: grao
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD no .env}
       POSTGRES_USER: grao_dev
       POSTGRES_DB: GRAO
     ports:
