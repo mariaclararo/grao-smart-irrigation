@@ -2,6 +2,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
 import argon2 from 'argon2';
 import * as authRepository from '../repositories/auth.repository.js';
+import { jwtSecret } from '../utils/jwtSecret.js';
 
 export const loginController = async (request: FastifyRequest<{
     Body: {
@@ -34,7 +35,7 @@ export const loginController = async (request: FastifyRequest<{
     //se a senha for válida eu devolvo o token (assinatura jwt)
     const token = jwt.sign(
         { id: usuario.id, nome: usuario.nome, tipo: usuario.tipo },
-        process.env.JWT_SECRET || 'secret', //esse secret é uma variável de inicialização do jwt, linha no arquivo .env
+        jwtSecret,
         { expiresIn: '1h' } //tem prazo de uma hora, dps precisa solicitar token novamente
     );
     reply.status(200).send({ message: 'Login realizado com sucesso!', token });

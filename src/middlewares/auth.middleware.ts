@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import type { FastifyRequest, FastifyReply } from 'fastify';
+import { jwtSecret } from '../utils/jwtSecret.js';
 
 //verifica se na requisição que ele ta mandando tem o token jwt
 export async function authMiddleware(
@@ -18,7 +19,7 @@ export async function authMiddleware(
         return;
     }
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+        const decoded = jwt.verify(token, jwtSecret);
         (request as any).user = decoded;
     } catch {
         reply.status(401).send({ message: 'Token inválido' });
